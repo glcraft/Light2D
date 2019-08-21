@@ -14,3 +14,6 @@ target_link_libraries(Light2D libglw ${SDL2_LIBRARY} ${SDL2_SDLMAIN_LIBRARY})
 target_include_directories(Light2D 
     PUBLIC ${SDL2_INCLUDE_DIR}
 )
+set_target_properties(Light2D PROPERTIES
+    CXX_STANDARD 17
+)
