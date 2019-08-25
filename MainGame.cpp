@@ -4,8 +4,8 @@
 #include <GL/glew.h>
 #include <glm/gtc/matrix_transform.hpp>
 
-#define NBBLOCK 7
-#define SIZE_TERRAIN 20
+#define NBBLOCK 50
+#define SIZE_TERRAIN 30
 void MainGame::init()
 {
     namespace fs = std::filesystem;
