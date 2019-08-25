@@ -104,6 +104,10 @@ void MainGame::display()
         m_fbotex.bindTo(0);
         m_vboScreen.draw(GL_TRIANGLE_FAN);
         m_fbotex.unbind();
+        m_program.terrain << gl::sl::use
+            << uni_viewmat
+            << uni_projmat;
+        m_vbo->draw(GL_TRIANGLES);
 
         m_input.getWindowData().swapBuffers();
     }
