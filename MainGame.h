@@ -10,6 +10,12 @@ public:
 private:
     using VBOType = gl::ArrayBuffer<glm::vec2>;
     Input m_input;
-    gl::sl::Program m_program;
+    struct _Shader
+    {
+        gl::sl::Program terrain, blockBlack, screen;
+    } m_program;
     VBOType::uptr m_vbo;
+    VBOType m_vboScreen;
+    gl::Framebuffer m_fbo;
+    gl::Texture m_fbotex;
 };
