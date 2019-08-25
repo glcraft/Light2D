@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+
 project(Light2D)
+
+find_package(SDL2 REQUIRED)
 
 add_subdirectory(libglw)
 
