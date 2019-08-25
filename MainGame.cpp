@@ -100,16 +100,20 @@ void MainGame::display()
         m_vbo->draw(GL_TRIANGLES);
         m_fbo.BindScreen();
         glViewport(0,0,m_input.getWindowData().size.x, m_input.getWindowData().size.y);
+
         glClear(GL_COLOR_BUFFER_BIT);
+        m_program.terrain << gl::sl::use
+            << uni_viewmat
+            << uni_projmat;
+        m_vbo->draw(GL_TRIANGLES);
+        
+        // glClear(GL_COLOR_BUFFER_BIT);
         m_program.screen << gl::sl::use
             << gl::UniformStatic<int>("tex0", 0);
         m_fbotex.bindTo(0);
         m_vboScreen.draw(GL_TRIANGLE_FAN);
         m_fbotex.unbind();
-        m_program.terrain << gl::sl::use
-            << uni_viewmat
-            << uni_projmat;
-        m_vbo->draw(GL_TRIANGLES);
+        
 
         m_input.getWindowData().swapBuffers();
     }
