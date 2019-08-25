@@ -14,7 +14,7 @@ void MainGame::init()
     std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
     std::uniform_int_distribution<> dis(1, SIZE_TERRAIN-1);
 
-    m_input.createWindow("Light2D", SDL_WINDOW_OPENGL);
+    m_input.createWindow("Light2D", SDL_WINDOW_OPENGL,  glm::ivec2(SDL_WINDOWPOS_CENTERED),  glm::ivec2(1024));
     glewExperimental = true;
     glewInit();
     
