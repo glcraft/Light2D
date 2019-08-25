@@ -17,6 +17,8 @@ void MainGame::init()
     m_input.createWindow("Light2D", SDL_WINDOW_OPENGL,  glm::ivec2(SDL_WINDOWPOS_CENTERED),  glm::ivec2(1024));
     glewExperimental = true;
     glewInit();
+
+    glEnable(GL_BLEND);glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
     gl::Object::SetAutoInstantiate(true);
 

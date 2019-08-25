@@ -14,5 +14,5 @@ void main()
     int i=0;
     while(dot(vecstep, currentUV-posPlayer)>0)
         currentVal+=texture(tex0, currentUV).x*0.05, currentUV-=vecstep;
-    outColor=vec4(1-vec3(clamp01(currentVal)), 1);
+    outColor=vec4(vec3(0), clamp01(currentVal));
 }
