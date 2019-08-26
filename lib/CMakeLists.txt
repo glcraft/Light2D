@@ -7,3 +7,6 @@ file(GLOB LIBSRC
     "*.h"
 )
 add_library(LibLight2D ${LIBSRC})
+target_include_directories(LibLight2D 
+    PUBLIC ${GLM_INCLUDE_DIR}
+)
