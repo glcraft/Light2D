@@ -19,6 +19,7 @@ Dir setDir(vec2 d)
 }
 struct WallInfo
 {
+    vec2 pointLeft, pointRight;
     Dir innerLeft, innerRight;
     Dir outerLeft, outerRight;
     Dir dir;
@@ -31,32 +32,37 @@ vec4 finding_tangent(vec2 center_circle, float radius, vec2 point)
     float a = asin(radius / dd);
     float b = atan(d.y, d.x);
     
-    float ta = b - a,tb = b + a;
-    return vec4(radius * sin(ta), radius * -cos(ta), radius * -sin(tb), radius * cos(tb));
+    float ta = b - a, tb = b + a;
+    vec4 pts=radius * vec4(sin(ta), -cos(ta), -sin(tb), cos(tb));
+    return vec4((center_circle+pts.xy-point), (center_circle+pts.zw-point));
 }
 WallInfo setWallInfo(vec4 wall, vec2 posLight, float size)
 {
     WallInfo wi;
+    wi.pointLeft = wall.xy;
+    wi.pointRight = wall.zw;
     wi.dir=setDir(wall.zw-wall.xy);
     vec4 tan1 = finding_tangent(posLight, size, wall.xy), tan2 = finding_tangent(posLight, size, wall.zw);
     wi.innerLeft = setDir(tan1.xy);
-    wi.innerRight = setDir(tan2.xy);
+    wi.innerRight = setDir(tan2.zw);
     wi.outerLeft = setDir(tan1.zw);
-    wi.outerRight = setDir(tan2.zw);
+    wi.outerRight = setDir(tan2.xy);
     return wi;
 }
 void main()
 {
     const float top = 0.6;
     const vec2 pts[2]= vec2[2](vec2(0.4,top), vec2(0.6,top));
-    const vec2 posPlayer=vec2(0.5, 0.5);
+    const vec2 posPlayer=vec2(0.4, 0.5);
 
-    vec2 norm_wall=get_normal(normalize(pts[1]-pts[0]));
-    // vec2 dirs[2] = vec2[2](normalize(pts[0]-posPlayer), normalize(posPlayer-pts[1]));
-    vec2 dirs[2] = vec2[2](normalize(pts[0]-posPlayer), normalize(pts[1]-posPlayer));
-    vec2 norms[2] = vec2[2](get_normal(dirs[0]), get_normal(dirs[1]));
-    // bool iswhite = !(dot((uv-pts[0]), norms[0])>0 && dot((uv-pts[1]), norms[1])>0 && dot((uv-pts[1]), norm_wall)<0 && dot((pts[1]-posPlayer), norm_wall)<0);
-    float valwhite = smoothstep (1, dot(dirs[1], dirs[0]), dot(normalize(uv-posPlayer), dirs[0]));//*float(dot((uv-pts[1]), norm_wall)<0 && dot((pts[1]-posPlayer), norm_wall)<0);
-
+    WallInfo winfo = setWallInfo(vec4(pts[0], pts[1]), posPlayer, 0.02);
+    float valwhite=1;
+    if (dot((uv-pts[1]), winfo.dir.normal)>0);
+    else if (dot(winfo.innerLeft.normal, winfo.pointLeft - uv)>0 && dot(winfo.innerRight.normal, winfo.pointRight - uv)<0)
+        valwhite=0.;
+    else if (dot(winfo.innerLeft.normal, winfo.pointLeft - uv)<0 && dot(winfo.outerLeft.normal, winfo.pointLeft - uv)>0)
+        valwhite=smoothstep (dot(winfo.innerLeft.dir, winfo.outerLeft.dir), 1, dot(normalize(winfo.pointLeft - uv), winfo.outerLeft.dir));
+    else if (dot(winfo.innerRight.normal, winfo.pointRight - uv)>0 && dot(winfo.outerRight.normal, winfo.pointRight - uv)<0)
+        valwhite=smoothstep (dot(winfo.innerRight.dir, winfo.outerRight.dir), 1, dot(normalize(winfo.pointRight - uv), winfo.outerRight.dir));
     outColor=vec4(vec3(clamp01(valwhite)), 1.0);
 }
