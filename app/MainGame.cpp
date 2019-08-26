@@ -33,23 +33,23 @@ void MainGame::init()
     m_vboScreen.attachVertexArray(std::make_shared<gl::VertexArray>());
     m_vboScreen.set_attrib(VBOType::Attrib<0>(0, 2, GL_FLOAT, GL_FALSE));
 
-    m_vbo = std::make_unique<VBOType>();
-    m_vbo->reserve(NBBLOCK*6);
-    glm::vec2* values = m_vbo->map_write();
-    size_t offset=0;
-    for (int i=0;i<NBBLOCK;++i)
-    {
-        glm::vec2 pos(dis(gen), dis(gen));
-        values[offset++]=pos+glm::vec2(0,0);
-        values[offset++]=pos+glm::vec2(1,0);
-        values[offset++]=pos+glm::vec2(0,1);
-        values[offset++]=pos+glm::vec2(1,0);
-        values[offset++]=pos+glm::vec2(1,1);
-        values[offset++]=pos+glm::vec2(0,1);
-    }
-    m_vbo->unmap();
-    m_vbo->attachVertexArray(std::make_shared<gl::VertexArray>());
-    m_vbo->set_attrib(VBOType::Attrib<0>(0, 2, GL_FLOAT, GL_FALSE));
+    // m_vbo = std::make_unique<VBOType>();
+    // m_vbo->reserve(NBBLOCK*6);
+    // glm::vec2* values = m_vbo->map_write();
+    // size_t offset=0;
+    // for (int i=0;i<NBBLOCK;++i)
+    // {
+    //     glm::vec2 pos(dis(gen), dis(gen));
+    //     values[offset++]=pos+glm::vec2(0,0);
+    //     values[offset++]=pos+glm::vec2(1,0);
+    //     values[offset++]=pos+glm::vec2(0,1);
+    //     values[offset++]=pos+glm::vec2(1,0);
+    //     values[offset++]=pos+glm::vec2(1,1);
+    //     values[offset++]=pos+glm::vec2(0,1);
+    // }
+    // m_vbo->unmap();
+    // m_vbo->attachVertexArray(std::make_shared<gl::VertexArray>());
+    // m_vbo->set_attrib(VBOType::Attrib<0>(0, 2, GL_FLOAT, GL_FALSE));
 
     m_program.terrain
         << gl::sl::Shader<gl::sl::Vertex>(fs::path("res/shaders/terrain.vert"))
@@ -97,7 +97,7 @@ void MainGame::display()
         m_program.blockBlack << gl::sl::use
             << uni_viewmat
             << uni_projmat;
-        m_vbo->draw(GL_TRIANGLES);
+        // m_vbo->draw(GL_TRIANGLES);
         m_fbo.BindScreen();
         glViewport(0,0,m_input.getWindowData().size.x, m_input.getWindowData().size.y);
 
@@ -105,7 +105,7 @@ void MainGame::display()
         m_program.terrain << gl::sl::use
             << uni_viewmat
             << uni_projmat;
-        m_vbo->draw(GL_TRIANGLES);
+        // m_vbo->draw(GL_TRIANGLES);
         
         // glClear(GL_COLOR_BUFFER_BIT);
         m_program.screen << gl::sl::use

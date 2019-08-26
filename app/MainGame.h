@@ -14,7 +14,7 @@ private:
     {
         gl::sl::Program terrain, blockBlack, screen;
     } m_program;
-    VBOType::uptr m_vbo;
+    // VBOType::uptr m_vbo;
     VBOType m_vboScreen;
     gl::Framebuffer m_fbo;
     gl::Texture m_fbotex;
