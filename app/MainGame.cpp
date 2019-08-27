@@ -1,6 +1,7 @@
 #include "MainGame.h"
 #include <filesystem>
 #include <random>
+#include <chrono>
 #include <GL/glew.h>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -87,8 +88,11 @@ void MainGame::display()
     prmat[3][3]=1;
     gl::UniformStatic<glm::mat4> uni_viewmat("viewmat", glm::mat4(1.f)), uni_projmat("projmat", glm::ortho<float>(0, SIZE_TERRAIN, SIZE_TERRAIN, 0, -1, 1));
     glClearColor(1,1,1,1);
+    auto time0 = std::chrono::steady_clock::now();
+    
     while(!quit)
     {
+        std::chrono::duration<float, std::ratio<1,1>> current_time(std::chrono::steady_clock::now()-time0);
         Input::update();
         if (m_input.getKeyPressed(SDL_SCANCODE_ESCAPE)||m_input.getWindowData().closed)
             quit=true;
@@ -111,7 +115,8 @@ void MainGame::display()
         
         // glClear(GL_COLOR_BUFFER_BIT);
         m_program.screen << gl::sl::use
-            << gl::UniformStatic<int>("tex0", 0);
+            << gl::UniformStatic<int>("tex0", 0)
+            << gl::UniformStatic<float>("time", current_time.count());
         m_fbotex.bindTo(0);
         m_vboScreen.draw(GL_TRIANGLE_FAN);
         m_fbotex.unbind();

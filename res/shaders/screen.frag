@@ -1,5 +1,6 @@
 #version 330 core
 uniform sampler2D tex0;
+uniform float time;
 in vec2 uv;
 out vec4 outColor;
 float clamp01(float v)
