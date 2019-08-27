@@ -42,10 +42,10 @@ WallInfo setWallInfo(vec4 wall, vec2 posLight, float size)
     WallInfo wi;
     wi.pointLeft = wall.xy;
     wi.pointRight = wall.zw;
-    wi.dir=setDir(wall.zw-wall.xy);
+    wi.dir=setDir(wi.pointRight-wi.pointLeft);
     if (size>0)
     {
-        vec4 tan1 = finding_tangent(posLight, size, wall.xy), tan2 = finding_tangent(posLight, size, wall.zw);
+        vec4 tan1 = finding_tangent(posLight, size, wi.pointLeft), tan2 = finding_tangent(posLight, size, wi.pointRight);
         wi.innerLeft = setDir(tan1.xy);
         wi.innerRight = setDir(tan2.zw);
         wi.outerLeft = setDir(tan1.zw);
@@ -60,22 +60,47 @@ WallInfo setWallInfo(vec4 wall, vec2 posLight, float size)
 }
 void main()
 {
-    const float top = 0.6;
-    const vec2 pts[2]= vec2[2](vec2(0.4,top), vec2(0.6,top));
-    const vec2 posPlayer=vec2(0.4, 0.5);
-    float sizePlayer=0.05;
+    const float spacing = 0.25;
+    float top = 0.6+(cos(time*0.5)*0.5+0.5)*0.4;
+    vec4 wall[2]= vec4[2](vec4(0.2,top, 0.45,top), vec4(0.55,top, 0.8,top));
+    const vec2 posLights[3]=vec2[3](vec2(0.5-spacing, 0.5), vec2(0.5, 0.5), vec2(0.5+spacing, 0.5));
+    const vec3 colLights[3]=vec3[3](vec3(1,0,0)*1.5, vec3(0,1,0), vec3(0,0,1));
+    float sizeLights=0.1;
+    float lengthLights=0.5;
+    vec3 finalColor=vec3(0);
+    
 
-    WallInfo winfo = setWallInfo(vec4(pts[0], pts[1]), posPlayer, sizePlayer);
-    float valwhite=1;
-    if (dot((uv-pts[1]), winfo.dir.normal)>0);
-    else if (dot(winfo.innerLeft.normal, winfo.pointLeft - uv)>0 && dot(winfo.innerRight.normal, winfo.pointRight - uv)<0)
-        valwhite=0.;
-    else if (sizePlayer>0.)
+    for(int iLight=0;iLight<3;++iLight)
     {
-        if (dot(winfo.innerLeft.normal, winfo.pointLeft - uv)<0 && dot(winfo.outerLeft.normal, winfo.pointLeft - uv)>0)
-            valwhite=smoothstep (dot(winfo.innerLeft.dir, winfo.outerLeft.dir), 1, dot(normalize(winfo.pointLeft - uv), winfo.outerLeft.dir));
-        else if (dot(winfo.innerRight.normal, winfo.pointRight - uv)>0 && dot(winfo.outerRight.normal, winfo.pointRight - uv)<0)
-            valwhite=smoothstep (dot(winfo.innerRight.dir, winfo.outerRight.dir), 1, dot(normalize(winfo.pointRight - uv), winfo.outerRight.dir));
+        float valwhite=1;
+        for(int iWall=0;iWall<2;++iWall)
+        {
+            WallInfo winfo = setWallInfo(wall[iWall], posLights[iLight], sizeLights);
+            
+            if (distance(posLights[iLight], uv)<=sizeLights)
+                valwhite=0.0;
+            else if (dot((uv-wall[iWall].xy), winfo.dir.normal)>0);
+            else if (dot(winfo.innerLeft.normal, winfo.pointLeft - uv)>0 && dot(winfo.innerRight.normal, winfo.pointRight - uv)<0)
+                valwhite=0.;
+            else if (sizeLights>0.)
+            {
+                if (dot(winfo.innerLeft.normal, winfo.pointLeft - uv)<0 && dot(winfo.innerRight.normal, winfo.pointRight - uv)>0)
+                {
+                    // InnerLeft et InnerRight se croisent, s'en occuper plus tard
+                }
+                else 
+                {
+                    if (dot(winfo.innerLeft.normal, winfo.pointLeft - uv)<0 && dot(winfo.outerLeft.normal, winfo.pointLeft - uv)>0)
+                        valwhite-=1-smoothstep (dot(winfo.innerLeft.dir, winfo.outerLeft.dir), 1, dot(normalize(winfo.pointLeft - uv), winfo.outerLeft.dir));
+                    if (dot(winfo.innerRight.normal, winfo.pointRight - uv)>0 && dot(winfo.outerRight.normal, winfo.pointRight - uv)<0)
+                        valwhite-=1-smoothstep (dot(winfo.innerRight.dir, winfo.outerRight.dir), 1, dot(normalize(winfo.pointRight - uv), winfo.outerRight.dir));
+                }
+                
+            }
+        }
+        finalColor+=colLights[iLight]*clamp01(valwhite)*clamp01((lengthLights-distance(posLights[iLight], uv)+sizeLights)/lengthLights);
     }
-    outColor=vec4(vec3(clamp01(valwhite)), 1.0);
+
+    
+    outColor=vec4(clamp(finalColor, 0, 1), 1.0);
 }
