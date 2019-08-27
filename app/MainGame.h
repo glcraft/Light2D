@@ -8,6 +8,7 @@ public:
     void init();
     void display();
 private:
+    void glxinfo();
     using VBOType = gl::ArrayBuffer<glm::vec2>;
     Input m_input;
     struct _Shader

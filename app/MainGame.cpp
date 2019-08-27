@@ -14,9 +14,11 @@ void MainGame::init()
     std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
     std::uniform_int_distribution<> dis(1, SIZE_TERRAIN-1);
 
-    m_input.createWindow("Light2D", SDL_WINDOW_OPENGL,  glm::ivec2(SDL_WINDOWPOS_CENTERED),  glm::ivec2(1024));
+    m_input.createWindow("Light2D", SDL_WINDOW_OPENGL, glm::ivec2(SDL_WINDOWPOS_CENTERED),  glm::ivec2(1024));
     glewExperimental = true;
     glewInit();
+
+    glxinfo();
 
     glEnable(GL_BLEND);glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
@@ -117,4 +119,14 @@ void MainGame::display()
 
         m_input.getWindowData().swapBuffers();
     }
+}
+#define GLDISP_INT(name) glGetIntegerv(name, &iv); std::cout << #name ": " << iv << std::endl;
+void MainGame::glxinfo()
+{
+    int iv;
+    std::cout << "OpenGL Info\n";
+    GLDISP_INT(GL_MAX_UNIFORM_BLOCK_SIZE)
+    GLDISP_INT(GL_MAX_UNIFORM_BUFFER_BINDINGS)
+    GLDISP_INT(GL_MAX_UNIFORM_LOCATIONS)
+    std::cout << "\n\n";
 }
