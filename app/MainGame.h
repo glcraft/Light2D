@@ -57,8 +57,8 @@ namespace gl
     };
 }
 
-#define MAX_NUM_TOTAL_LIGHTS 5
-#define MAX_NUM_TOTAL_WALLS 5
+#define MAX_NUM_TOTAL_LIGHTS 10
+#define MAX_NUM_TOTAL_WALLS 10
 
 struct Dir
 {
@@ -81,18 +81,25 @@ struct Light
     glm::vec2 size_strength;
     glm::vec4 color;
 };
-
+template<int nb_lights>
 struct Lights
 {
     Light lights[MAX_NUM_TOTAL_LIGHTS];
-    int numOfLights;
+    int numOfLights=nb_light;
 };
+template<int nb_lights, int nb_walls>
 struct Walls
 {
     Wall walls[MAX_NUM_TOTAL_WALLS];
     WallTangent walltangs[MAX_NUM_TOTAL_WALLS*MAX_NUM_TOTAL_LIGHTS];
-    int numOfWalls;
+    int numOfWalls = nb_walls;
 };
+// template<int nb_lights, int nb_walls>
+// struct Uniform_Liblight
+// {
+//     Lights<nb_lights> lights;
+//     Walls<nb_lights, nb_walls> lights;
+// };
 
 class MainGame
 {
@@ -111,6 +118,6 @@ private:
     VBOType m_vboScreen;
     gl::Framebuffer m_fbo;
     gl::Texture m_fbotex;
-    gl::UniformBuffer<Lights> uni_lights;
-    gl::UniformBuffer<Walls> uni_walls;
+    gl::UniformBuffer<Lights<10>> uni_lights;
+    gl::UniformBuffer<Walls<10, 10>> uni_walls;
 };

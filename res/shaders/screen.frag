@@ -1,7 +1,7 @@
 #version 330 core
 
-#define MAX_NUM_TOTAL_LIGHTS 5
-#define MAX_NUM_TOTAL_WALLS 5
+#define MAX_NUM_TOTAL_LIGHTS 10
+#define MAX_NUM_TOTAL_WALLS 10
 
 struct Dir
 {
