@@ -8,42 +8,6 @@
 #define NBBLOCK 50
 #define SIZE_TERRAIN 30
 
-namespace gl
-{
-    //http://www.geeks3d.com/3dfr/20140703/uniform-buffers-objects-opengl-31-tutorial/
-    template<typename MyStruct>
-    class UniformBuffer : public Buffer<GL_UNIFORM_BUFFER, MyStruct>
-    {
-    public:
-        void setName(std::string_view block_name)
-        {
-            m_blockName = block_name;
-        }
-        
-        void bindBase(GLuint bind_point)
-        {
-            m_bindPoint = bind_point;
-            glBindBufferBase(GL_UNIFORM_BUFFER, m_bindPoint, id());
-        }
-        template <typename ...Args>
-        void bind(Args... programs)
-        {
-            (bind(programs), ...);
-        }
-        void bind(gl::sl::Program& program)
-        {
-            glUniformBlockBinding(program.id(), getBlockIndex(program, m_blockName), m_bindPoint);
-        }
-    protected:
-        GLuint getBlockIndex(gl::sl::Program& program, std::string_view block_name)
-        {
-            return glGetUniformBlockIndex(program.id(), block_name.data());
-        }
-    private:
-        GLuint m_bindPoint=0;
-        std::string m_blockName;
-    };
-}
 inline glm::vec2 get_normal(glm::vec2 dir)
 {return glm::vec2(dir.y, -dir.x);}
 Dir setDir(glm::vec2 d)
@@ -76,10 +40,10 @@ WallInfo setWallInfo(glm::vec4 wall, glm::vec2 posLight, float size)
     if (size>0)
     {
         glm::vec4 tan1 = finding_tangent(posLight, size, wi.pointLeft), tan2 = finding_tangent(posLight, size, wi.pointRight);
-        wi.innerLeft = setDir(tan1.xy);
-        wi.innerRight = setDir(tan2.zw);
-        wi.outerLeft = setDir(tan1.zw);
-        wi.outerRight = setDir(tan2.xy);
+        wi.innerLeft = setDir(getXY(tan1));
+        wi.innerRight = setDir(getZW(tan2));
+        wi.outerLeft = setDir(getZW(tan1));
+        wi.outerRight = setDir(getXY(tan2));
     }
     else
     {
@@ -97,7 +61,8 @@ void MainGame::init()
     std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
     std::uniform_int_distribution<> dis(1, SIZE_TERRAIN-1);
 
-    m_input.createWindow("Light2D", SDL_WINDOW_OPENGL, glm::ivec2(SDL_WINDOWPOS_CENTERED),  glm::ivec2(512));
+    m_input.createWindow("Light2D", SDL_WINDOW_OPENGL, glm::ivec2(SDL_WINDOWPOS_CENTERED),  glm::ivec2(1024));
+    SDL_GL_SetSwapInterval(1);
     glewExperimental = true;
     glewInit();
 
@@ -142,6 +107,7 @@ void MainGame::init()
         glm::mat4 view, proj;
     };
     gl::UniformBuffer<MatGL> uni_matrices;
+    uni_matrices.instantiate();
     uni_matrices.reserve(1);
     uni_matrices.setName("Matrices");
     
@@ -150,38 +116,43 @@ void MainGame::init()
     matgl->proj=glm::ortho<float>(0, SIZE_TERRAIN, SIZE_TERRAIN, 0, -1, 1);
     uni_matrices.unmap();
     
+    uni_lights.instantiate();
+    uni_walls.instantiate();
+
     uni_lights.reserve(1);
     uni_lights.setName("Lights");
-    {
-        auto matgl = uni_lights.map_write();
-        int i=0;
-        float size=0.05f, strength=0.5f;
-        const float spacing = 0.25;
-        matgl->lights[i++] = Light{glm::vec2(0.5f-spacing, 0.5f), glm::vec3(1,0,0), size, strength};
-        matgl->lights[i++] = Light{glm::vec2(0.5f, 0.5f), glm::vec3(0,1,0), size, strength};
-        matgl->lights[i++] = Light{glm::vec2(0.5f+spacing, 0.5f), glm::vec3(0,0,1), size, strength};
-        matgl->numOfLights=3;
-        uni_lights.unmap();
-    }
     uni_walls.reserve(1);
-    uni_walls.setName("Lights");
+    uni_walls.setName("Walls");
+    
+    const int nblights=3;
+    const int nbwalls=2;
     {
-        auto matgl = uni_walls.map_write();
-        int i=0;
+        auto lights = uni_lights.map_write();
+        auto walls = uni_walls.map_write();
         float size=0.05f, strength=0.5f;
+        float top=0.7f;
         const float spacing = 0.25;
-        matgl->walls[i++] = Light{glm::vec2(0.5f-spacing, 0.5f), glm::vec3(1,0,0), size, strength};
-        matgl->walls[i++] = Light{glm::vec2(0.5f, 0.5f), glm::vec3(0,1,0), size, strength};
-        matgl->numOfLights=3;
+        const glm::vec2 posLight[3]={glm::vec2(0.5f-spacing, 0.5f), glm::vec2(0.5f, 0.5f), glm::vec2(0.5f+spacing, 0.5f) };
+        const glm::vec3 colLight[3]={glm::vec3(1,0,0), glm::vec3(0,1,0), glm::vec3(0,0,1)};
+        const glm::vec4 _wall[2]={glm::vec4(0.2,top, 0.45,top), glm::vec4(0.55,top, 0.8,top)};
+        for (int iLight=0;iLight<nblights;++iLight)
+        {
+            lights->lights[iLight] = Light{posLight[iLight], glm::vec2(size, strength), glm::vec4(colLight[iLight],1.)};
+            for (int iWall = 0;iWall<nbwalls;++iWall)
+                walls->walls[iWall+iLight*nbwalls] = setWallInfo(_wall[iWall], lights->lights[iLight].position, lights->lights[iLight].size_strength.x);
+        }
+        lights->numOfLights=nblights;
+        walls->numOfWalls=nbwalls;
         uni_walls.unmap();
+        uni_lights.unmap();
+        
     }
-
     uni_matrices.bindBase(1);
     uni_lights.bindBase(2);
     uni_walls.bindBase(3);
     uni_matrices.bind(m_program.terrain, m_program.blockBlack, m_program.screen);
-    uni_lights.bind(m_program.screen);
     uni_walls.bind(m_program.screen);
+    uni_lights.bind(m_program.screen);
     
 
     // m_fbo = std::make_unique<gl::Framebuffer>();
@@ -220,6 +191,9 @@ void MainGame::display()
         glClear(GL_COLOR_BUFFER_BIT);
         m_program.screen << gl::sl::use
             << gl::UniformStatic<float>("time", current_time.count());
+        // uni_walls.bind(m_program.screen);
+        // uni_lights.bind(m_program.screen);
+        
         m_fbotex.bindTo(0);
         m_vboScreen.draw(GL_TRIANGLE_FAN);
         m_fbotex.unbind();

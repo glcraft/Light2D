@@ -1,7 +1,7 @@
 #version 330 core
 
-#define NBLIGHTS 3
-#define NBWALLS 2
+#define MAX_NUM_TOTAL_LIGHTS 5
+#define MAX_NUM_TOTAL_WALLS 5
 
 struct Dir
 {
@@ -17,15 +17,23 @@ struct WallInfo
 };
 struct Light
 {
-    vec2 position;
-    vec3 color;
-    float size, strenght;
+    vec2 position, size_strength;
+    vec4 color;
+};
+
+layout (std140) uniform Lights
+{
+    Light lights[MAX_NUM_TOTAL_LIGHTS];
+    int nbLights;
+};
+layout (std140) uniform Walls
+{
+    WallInfo walls[MAX_NUM_TOTAL_WALLS*MAX_NUM_TOTAL_LIGHTS];
+    int nbWalls;
 };
 
 uniform float time;
-in WallInfo vs_walls[NBLIGHTS*NBWALLS];
 in vec2 uv;
-in Light lights[NBLIGHTS];
 
 out vec4 outColor;
 
@@ -35,39 +43,39 @@ float clamp01(float v)
 
 void main()
 {
-    const float spacing = 0.25;
     vec3 finalColor=vec3(0);
 
-    for(int iLight=0;iLight<3;++iLight)
+    for(int iLight=0;iLight<nbLights;++iLight)
     {
         float valwhite=1;
-        for(int iWall=0;iWall<2;++iWall)
+        for(int iWall=0;iWall<nbWalls;++iWall)
         {
-            int idWall = iLight*NBWALLS+iWall;
-            if (distance(lights[iLight].position, uv)<=lights[iLight].size)
+            int idWall = iLight*nbWalls+iWall;
+            if (distance(lights[iLight].position, uv)<=lights[iLight].size_strength.x)
                 valwhite=0.0;
-            else if (dot((uv-vs_walls[idWall].pointLeft), vs_walls[idWall].direction.normal)>0);
-            else if (dot(vs_walls[idWall].innerLeft.normal, vs_walls[idWall].pointLeft - uv)>0 && dot(vs_walls[idWall].innerRight.normal, vs_walls[idWall].pointRight - uv)<0)
+            else if (dot((uv-walls[idWall].pointLeft), walls[idWall].direction.normal)>0);
+            else if (dot(walls[idWall].innerLeft.normal, walls[idWall].pointLeft - uv)>0 && dot(walls[idWall].innerRight.normal, walls[idWall].pointRight - uv)<0)
                 valwhite=0.;
-            else if (lights[iLight].size>0.)
+            else if (lights[iLight].size_strength.x>0.)
             {
-                if (dot(vs_walls[idWall].innerLeft.normal, vs_walls[idWall].pointLeft - uv)<0 && dot(vs_walls[idWall].innerRight.normal, vs_walls[idWall].pointRight - uv)>0)
+                if (dot(walls[idWall].innerLeft.normal, walls[idWall].pointLeft - uv)<0 && dot(walls[idWall].innerRight.normal, walls[idWall].pointRight - uv)>0)
                 {
                     // InnerLeft et InnerRight se croisent, s'en occuper plus tard
                 }
                 else 
                 {
-                    if (dot(vs_walls[idWall].innerLeft.normal, vs_walls[idWall].pointLeft - uv)<0 && dot(vs_walls[idWall].outerLeft.normal, vs_walls[idWall].pointLeft - uv)>0)
-                        valwhite-=1-smoothstep (dot(vs_walls[idWall].innerLeft.line, vs_walls[idWall].outerLeft.line), 1, dot(normalize(vs_walls[idWall].pointLeft - uv), vs_walls[idWall].outerLeft.line));
-                    if (dot(vs_walls[idWall].innerRight.normal, vs_walls[idWall].pointRight - uv)>0 && dot(vs_walls[idWall].outerRight.normal, vs_walls[idWall].pointRight - uv)<0)
-                        valwhite-=1-smoothstep (dot(vs_walls[idWall].innerRight.line, vs_walls[idWall].outerRight.line), 1, dot(normalize(vs_walls[idWall].pointRight - uv), vs_walls[idWall].outerRight.line));
+                    if (dot(walls[idWall].innerLeft.normal, walls[idWall].pointLeft - uv)<0 && dot(walls[idWall].outerLeft.normal, walls[idWall].pointLeft - uv)>0)
+                        valwhite-=1-smoothstep (dot(walls[idWall].innerLeft.line, walls[idWall].outerLeft.line), 1, dot(normalize(walls[idWall].pointLeft - uv), walls[idWall].outerLeft.line));
+                    if (dot(walls[idWall].innerRight.normal, walls[idWall].pointRight - uv)>0 && dot(walls[idWall].outerRight.normal, walls[idWall].pointRight - uv)<0)
+                        valwhite-=1-smoothstep (dot(walls[idWall].innerRight.line, walls[idWall].outerRight.line), 1, dot(normalize(walls[idWall].pointRight - uv), walls[idWall].outerRight.line));
                 }
                 
             }
         }
-        finalColor+=lights[iLight].color*clamp01(valwhite)*clamp01((lights[iLight].strenght-distance(lights[iLight].position, uv)+lights[iLight].size)/lights[iLight].strenght);
+        finalColor+=lights[iLight].color.xyz*clamp01(valwhite)*clamp01((lights[iLight].size_strength.y-distance(lights[iLight].position, uv)+lights[iLight].size_strength.x)/lights[iLight].size_strength.y);
     }
 
     
     outColor=vec4(clamp(finalColor, 0, 1), 1.0);
+    // outColor=vec4(vec3(0,nbWalls==2,nbLights==1), 1.0);
 }

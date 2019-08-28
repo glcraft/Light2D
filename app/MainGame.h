@@ -3,8 +3,62 @@
 #include <libglw/Shaders.h>
 #include "Input.h"
 
-#define MAX_NUM_TOTAL_LIGHTS 10
-#define MAX_NUM_TOTAL_WALLS 10
+
+namespace gl
+{
+    //http://www.geeks3d.com/3dfr/20140703/uniform-buffers-objects-opengl-31-tutorial/
+    template<typename MyStruct>
+    class UniformBuffer : public Buffer<GL_UNIFORM_BUFFER, MyStruct>
+    {
+    public:
+        using BufferBase = Buffer<GL_UNIFORM_BUFFER, MyStruct>;
+        UniformBuffer() : BufferBase()
+		{
+			
+		}
+        ~UniformBuffer()
+		{
+			this->destroy();
+		}
+        void setName(std::string_view block_name)
+        {
+            m_blockName = block_name;
+        }
+        
+        void bindBase(GLuint bind_point)
+        {
+            m_bindPoint = bind_point;
+            BufferBase::bind();
+            glBindBufferBase(GL_UNIFORM_BUFFER, m_bindPoint, id());
+        }
+        template <typename ...Args>
+        void bind(Args... programs)
+        {
+            (bind(programs), ...);
+        }
+        void bind(gl::sl::Program& program)
+        {
+            BufferBase::bind();
+            int blockIndx= getBlockIndex(program, m_blockName);
+            
+            if (blockIndx!=GL_INVALID_INDEX)
+            {
+                glUniformBlockBinding(program.id(), blockIndx, m_bindPoint);
+            }
+        }
+    protected:
+        GLuint getBlockIndex(gl::sl::Program& program, std::string_view block_name)
+        {
+            return glGetUniformBlockIndex(program.id(), block_name.data());
+        }
+    private:
+        GLuint m_bindPoint=0;
+        std::string m_blockName;
+    };
+}
+
+#define MAX_NUM_TOTAL_LIGHTS 5
+#define MAX_NUM_TOTAL_WALLS 5
 
 struct Dir
 {
@@ -21,8 +75,8 @@ struct WallInfo
 struct Light
 {
     glm::vec2 position;
-    glm::vec3 color;
-    float size, strenght;
+    glm::vec2 size_strength;
+    glm::vec4 color;
 };
 
 struct Lights
@@ -32,7 +86,7 @@ struct Lights
 };
 struct Walls
 {
-    WallInfo walls[MAX_NUM_TOTAL_WALLS];
+    WallInfo walls[MAX_NUM_TOTAL_WALLS*MAX_NUM_TOTAL_LIGHTS];
     int numOfWalls;
 };
 
