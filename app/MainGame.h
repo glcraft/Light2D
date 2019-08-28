@@ -3,60 +3,6 @@
 #include <libglw/Shaders.h>
 #include "Input.h"
 
-
-namespace gl
-{
-    //http://www.geeks3d.com/3dfr/20140703/uniform-buffers-objects-opengl-31-tutorial/
-    template<typename MyStruct>
-    class UniformBuffer : public Buffer<GL_UNIFORM_BUFFER, MyStruct>
-    {
-    public:
-        using BufferBase = Buffer<GL_UNIFORM_BUFFER, MyStruct>;
-        UniformBuffer() : BufferBase()
-		{
-			
-		}
-        ~UniformBuffer()
-		{
-			this->destroy();
-		}
-        void setName(std::string_view block_name)
-        {
-            m_blockName = block_name;
-        }
-        
-        void bindBase(GLuint bind_point)
-        {
-            m_bindPoint = bind_point;
-            BufferBase::bind();
-            glBindBufferBase(GL_UNIFORM_BUFFER, m_bindPoint, id());
-        }
-        template <typename ...Args>
-        void bind(Args... programs)
-        {
-            (bind(programs), ...);
-        }
-        void bind(gl::sl::Program& program)
-        {
-            BufferBase::bind();
-            int blockIndx= getBlockIndex(program, m_blockName);
-            
-            if (blockIndx!=GL_INVALID_INDEX)
-            {
-                glUniformBlockBinding(program.id(), blockIndx, m_bindPoint);
-            }
-        }
-    protected:
-        GLuint getBlockIndex(gl::sl::Program& program, std::string_view block_name)
-        {
-            return glGetUniformBlockIndex(program.id(), block_name.data());
-        }
-    private:
-        GLuint m_bindPoint=0;
-        std::string m_blockName;
-    };
-}
-
 #define MAX_NUM_TOTAL_LIGHTS 10
 #define MAX_NUM_TOTAL_WALLS 10
 
@@ -84,14 +30,14 @@ struct Light
 template<int nb_lights>
 struct Lights
 {
-    Light lights[MAX_NUM_TOTAL_LIGHTS];
+    Light lights[nb_lights];
     int numOfLights=nb_light;
 };
 template<int nb_lights, int nb_walls>
 struct Walls
 {
-    Wall walls[MAX_NUM_TOTAL_WALLS];
-    WallTangent walltangs[MAX_NUM_TOTAL_WALLS*MAX_NUM_TOTAL_LIGHTS];
+    Wall walls[nb_walls];
+    WallTangent walltangs[nb_walls*nb_lights];
     int numOfWalls = nb_walls;
 };
 // template<int nb_lights, int nb_walls>
