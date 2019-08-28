@@ -65,12 +65,15 @@ struct Dir
     glm::vec2 line;
     glm::vec2 normal;
 };
-struct WallInfo
+struct Wall
 {
     glm::vec2 pointLeft, pointRight;
+    Dir direction;
+};
+struct WallTangent
+{
     Dir innerLeft, innerRight;
     Dir outerLeft, outerRight;
-    Dir direction;
 };
 struct Light
 {
@@ -86,7 +89,8 @@ struct Lights
 };
 struct Walls
 {
-    WallInfo walls[MAX_NUM_TOTAL_WALLS*MAX_NUM_TOTAL_LIGHTS];
+    Wall walls[MAX_NUM_TOTAL_WALLS];
+    WallTangent walltangs[MAX_NUM_TOTAL_WALLS*MAX_NUM_TOTAL_LIGHTS];
     int numOfWalls;
 };
 

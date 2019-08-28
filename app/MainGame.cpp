@@ -30,16 +30,17 @@ glm::vec4 finding_tangent(glm::vec2 center_circle, float radius, glm::vec2 point
     glm::vec4 pts=radius * glm::vec4(glm::sin(ta), -glm::cos(ta), -glm::sin(tb), glm::cos(tb));
     return glm::vec4((center_circle+getXY(pts)-point), (center_circle+getZW(pts)-point));
 }
-WallInfo setWallInfo(glm::vec4 wall, glm::vec2 posLight, float size)
+WallTangent setWallInfo(Wall& wall, glm::vec2 posLight, float size)
 {
-    WallInfo wi;
-    wi.pointLeft = glm::vec2(wall.x, wall.y);
-    wi.pointRight =  glm::vec2(wall.z, wall.w);
-    wi.direction=setDir(wi.pointRight-wi.pointLeft);
+    // WallInfo wi;
+    // wi.pointLeft = glm::vec2(wall.x, wall.y);
+    // wi.pointRight =  glm::vec2(wall.z, wall.w);
+    // wi.direction=setDir(wi.pointRight-wi.pointLeft);
+    WallTangent wi;
     
     if (size>0)
     {
-        glm::vec4 tan1 = finding_tangent(posLight, size, wi.pointLeft), tan2 = finding_tangent(posLight, size, wi.pointRight);
+        glm::vec4 tan1 = finding_tangent(posLight, size, wall.pointLeft), tan2 = finding_tangent(posLight, size, wall.pointRight);
         wi.innerLeft = setDir(getXY(tan1));
         wi.innerRight = setDir(getZW(tan2));
         wi.outerLeft = setDir(getZW(tan1));
@@ -47,8 +48,8 @@ WallInfo setWallInfo(glm::vec4 wall, glm::vec2 posLight, float size)
     }
     else
     {
-        wi.innerLeft = wi.outerLeft = setDir(posLight-wi.pointLeft);
-        wi.innerRight = wi.outerRight = setDir(posLight-wi.pointRight);
+        wi.innerLeft = wi.outerLeft = setDir(posLight-wall.pointLeft);
+        wi.innerRight = wi.outerRight = setDir(posLight-wall.pointRight);
     }
     return wi;
 }
@@ -129,17 +130,23 @@ void MainGame::init()
     {
         auto lights = uni_lights.map_write();
         auto walls = uni_walls.map_write();
-        float size=0.05f, strength=0.5f;
+        float size=0.1f, strength=0.5f;
         float top=0.7f;
         const float spacing = 0.25;
         const glm::vec2 posLight[3]={glm::vec2(0.5f-spacing, 0.5f), glm::vec2(0.5f, 0.5f), glm::vec2(0.5f+spacing, 0.5f) };
         const glm::vec3 colLight[3]={glm::vec3(1,0,0), glm::vec3(0,1,0), glm::vec3(0,0,1)};
-        const glm::vec4 _wall[2]={glm::vec4(0.2,top, 0.45,top), glm::vec4(0.55,top, 0.8,top)};
+        const glm::vec4 _wall[2]={glm::vec4(0.2,top, 0.45,top+0.1), glm::vec4(0.55,top+0.1, 0.8,top)};
+        for (int iWall = 0;iWall<nbwalls;++iWall)
+        {
+            walls->walls[iWall].pointLeft = getXY(_wall[iWall]);
+            walls->walls[iWall].pointRight = getZW(_wall[iWall]);
+            walls->walls[iWall].direction = setDir(walls->walls[iWall].pointRight - walls->walls[iWall].pointLeft);
+        }
         for (int iLight=0;iLight<nblights;++iLight)
         {
             lights->lights[iLight] = Light{posLight[iLight], glm::vec2(size, strength), glm::vec4(colLight[iLight],1.)};
             for (int iWall = 0;iWall<nbwalls;++iWall)
-                walls->walls[iWall+iLight*nbwalls] = setWallInfo(_wall[iWall], lights->lights[iLight].position, lights->lights[iLight].size_strength.x);
+                walls->walltangs[iWall+iLight*nbwalls] = setWallInfo(walls->walls[iWall], lights->lights[iLight].position, lights->lights[iLight].size_strength.x);
         }
         lights->numOfLights=nblights;
         walls->numOfWalls=nbwalls;

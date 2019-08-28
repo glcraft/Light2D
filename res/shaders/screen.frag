@@ -8,12 +8,15 @@ struct Dir
     vec2 line;
     vec2 normal;
 };
-struct WallInfo
+struct Wall
 {
     vec2 pointLeft, pointRight;
+    Dir direction;
+};
+struct WallTangent
+{
     Dir innerLeft, innerRight;
     Dir outerLeft, outerRight;
-    Dir direction;
 };
 struct Light
 {
@@ -28,7 +31,8 @@ layout (std140) uniform Lights
 };
 layout (std140) uniform Walls
 {
-    WallInfo walls[MAX_NUM_TOTAL_WALLS*MAX_NUM_TOTAL_LIGHTS];
+    Wall walls[MAX_NUM_TOTAL_WALLS];
+    WallTangent walltangs[MAX_NUM_TOTAL_WALLS*MAX_NUM_TOTAL_LIGHTS];
     int nbWalls;
 };
 
@@ -53,21 +57,21 @@ void main()
             int idWall = iLight*nbWalls+iWall;
             if (distance(lights[iLight].position, uv)<=lights[iLight].size_strength.x)
                 valwhite=0.0;
-            else if (dot((uv-walls[idWall].pointLeft), walls[idWall].direction.normal)>0);
-            else if (dot(walls[idWall].innerLeft.normal, walls[idWall].pointLeft - uv)>0 && dot(walls[idWall].innerRight.normal, walls[idWall].pointRight - uv)<0)
+            else if (dot((uv-walls[iWall].pointLeft), walls[iWall].direction.normal)>0);
+            else if (dot(walltangs[idWall].innerLeft.normal, walls[iWall].pointLeft - uv)>0 && dot(walltangs[idWall].innerRight.normal, walls[iWall].pointRight - uv)<0)
                 valwhite=0.;
             else if (lights[iLight].size_strength.x>0.)
             {
-                if (dot(walls[idWall].innerLeft.normal, walls[idWall].pointLeft - uv)<0 && dot(walls[idWall].innerRight.normal, walls[idWall].pointRight - uv)>0)
+                if (dot(walltangs[idWall].innerLeft.normal, walls[iWall].pointLeft - uv)<0 && dot(walltangs[idWall].innerRight.normal, walls[iWall].pointRight - uv)>0)
                 {
                     // InnerLeft et InnerRight se croisent, s'en occuper plus tard
                 }
                 else 
                 {
-                    if (dot(walls[idWall].innerLeft.normal, walls[idWall].pointLeft - uv)<0 && dot(walls[idWall].outerLeft.normal, walls[idWall].pointLeft - uv)>0)
-                        valwhite-=1-smoothstep (dot(walls[idWall].innerLeft.line, walls[idWall].outerLeft.line), 1, dot(normalize(walls[idWall].pointLeft - uv), walls[idWall].outerLeft.line));
-                    if (dot(walls[idWall].innerRight.normal, walls[idWall].pointRight - uv)>0 && dot(walls[idWall].outerRight.normal, walls[idWall].pointRight - uv)<0)
-                        valwhite-=1-smoothstep (dot(walls[idWall].innerRight.line, walls[idWall].outerRight.line), 1, dot(normalize(walls[idWall].pointRight - uv), walls[idWall].outerRight.line));
+                    if (dot(walltangs[idWall].innerLeft.normal, walls[iWall].pointLeft - uv)<0 && dot(walltangs[idWall].outerLeft.normal, walls[iWall].pointLeft - uv)>0)
+                        valwhite-=1-smoothstep (dot(walltangs[idWall].innerLeft.line, walltangs[idWall].outerLeft.line), 1, dot(normalize(walls[iWall].pointLeft - uv), walltangs[idWall].outerLeft.line));
+                    if (dot(walltangs[idWall].innerRight.normal, walls[iWall].pointRight - uv)>0 && dot(walltangs[idWall].outerRight.normal, walls[iWall].pointRight - uv)<0)
+                        valwhite-=1-smoothstep (dot(walltangs[idWall].innerRight.line, walltangs[idWall].outerRight.line), 1, dot(normalize(walls[iWall].pointRight - uv), walltangs[idWall].outerRight.line));
                 }
                 
             }
