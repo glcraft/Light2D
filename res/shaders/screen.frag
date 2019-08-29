@@ -2,6 +2,7 @@
 
 #define MAX_NUM_TOTAL_LIGHTS 10
 #define MAX_NUM_TOTAL_WALLS 10
+#define DEBUG 1
 
 struct Dir
 {
@@ -52,14 +53,25 @@ void main()
     for(int iLight=0;iLight<nbLights;++iLight)
     {
         float valwhite=1;
+        float distLightUV = distance(lights[iLight].position, uv);
+        float size_and_strength = lights[iLight].size_strength.y+lights[iLight].size_strength.x;
+
         for(int iWall=0;iWall<nbWalls;++iWall)
         {
             int idWall = iLight*nbWalls+iWall;
-            if (distance(lights[iLight].position, uv)<=lights[iLight].size_strength.x)
+#if DEBUG
+            if (distLightUV<=lights[iLight].size_strength.x)//
+                valwhite=0.0;
+            else
+#endif
+            if (distLightUV>size_and_strength)//
                 valwhite=0.0;
             else if (dot((uv-walls[iWall].pointLeft), walls[iWall].direction.normal)>0);
             else if (dot(walltangs[idWall].innerLeft.normal, walls[iWall].pointLeft - uv)>0 && dot(walltangs[idWall].innerRight.normal, walls[iWall].pointRight - uv)<0)
+            {
                 valwhite=0.;
+            }
+                
             else if (lights[iLight].size_strength.x>0.)
             {
                 if (dot(walltangs[idWall].innerLeft.normal, walls[iWall].pointLeft - uv)<0 && dot(walltangs[idWall].innerRight.normal, walls[iWall].pointRight - uv)>0)
@@ -76,7 +88,8 @@ void main()
                 
             }
         }
-        finalColor+=lights[iLight].color.xyz*clamp01(valwhite)*clamp01((lights[iLight].size_strength.y-distance(lights[iLight].position, uv)+lights[iLight].size_strength.x)/lights[iLight].size_strength.y);
+        if (valwhite>0.)
+            finalColor+=lights[iLight].color.xyz*clamp01(valwhite)*clamp01((size_and_strength-distLightUV)/lights[iLight].size_strength.y);
     }
 
     
