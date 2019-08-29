@@ -126,16 +126,17 @@ void MainGame::init()
     uni_walls.setName("Walls");
     
     const int nblights=3;
-    const int nbwalls=2;
+    const int nbwalls=1;
     {
         auto lights = uni_lights.map_write();
         auto walls = uni_walls.map_write();
-        float size=0.1f, strength=0.5f;
-        float top=0.7f;
+        float size=0.01f, strength=3.5f;
+        float top=0.51f;
         const float spacing = 0.25;
         const glm::vec2 posLight[3]={glm::vec2(0.5f-spacing, 0.5f), glm::vec2(0.5f, 0.5f), glm::vec2(0.5f+spacing, 0.5f) };
         const glm::vec3 colLight[3]={glm::vec3(1,0,0), glm::vec3(0,1,0), glm::vec3(0,0,1)};
-        const glm::vec4 _wall[2]={glm::vec4(0.2,top, 0.45,top+0.1), glm::vec4(0.55,top+0.1, 0.8,top)};
+        // const glm::vec4 _wall[2]={glm::vec4(0.2,top, 0.45,top+0.1), glm::vec4(0.55,top+0.1, 0.8,top)};
+        const glm::vec4 _wall[2]={glm::vec4(0.2,top, 0.8,top), glm::vec4(0.55,top+0.1, 0.8,top)};
         for (int iWall = 0;iWall<nbwalls;++iWall)
         {
             walls->walls[iWall].pointLeft = getXY(_wall[iWall]);
