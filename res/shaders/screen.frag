@@ -36,6 +36,10 @@ layout (std140) uniform Walls
     WallTangent walltangs[MAX_NUM_TOTAL_WALLS*MAX_NUM_TOTAL_LIGHTS];
     int nbWalls;
 };
+float cross(vec2 v, vec2 w)
+{
+    return v.x*w.y-v.y*w.x;
+}
 
 uniform float time;
 in vec2 uv;
@@ -77,6 +81,14 @@ void main()
                 if (dot(walltangs[idWall].innerLeft.normal, walls[iWall].pointLeft - uv)<0 && dot(walltangs[idWall].innerRight.normal, walls[iWall].pointRight - uv)>0)
                 {
                     // InnerLeft et InnerRight se croisent, s'en occuper plus tard
+                    // vector finding cross point : https://stackoverflow.com/a/565282/6345054
+                    float v1=smoothstep (dot(walltangs[idWall].innerLeft.line, walltangs[idWall].outerLeft.line), 1, dot(normalize(walls[iWall].pointLeft - uv), walltangs[idWall].outerLeft.line));
+                    float v2=smoothstep (dot(walltangs[idWall].innerRight.line, walltangs[idWall].outerRight.line), 1, dot(normalize(walls[iWall].pointRight - uv), walltangs[idWall].outerRight.line));
+                    vec2 p = walls[iWall].pointLeft, r=walltangs[idWall].innerLeft.line, q=walls[iWall].pointRight, s=walltangs[idWall].innerRight.line;
+                    float t=cross((q-p), s/(cross(r, s)));
+                    vec2 pt = walls[iWall].pointLeft+t*walltangs[idWall].innerLeft.line;
+                    float valPT=mix(v2, v1, smoothstep (dot(walltangs[idWall].innerLeft.line, walltangs[idWall].innerRight.line), 1, dot(normalize(pt - uv), walltangs[idWall].innerRight.line)));
+                    valwhite=valPT;
                 }
                 else 
                 {
