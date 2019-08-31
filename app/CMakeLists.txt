@@ -10,7 +10,7 @@ file(GLOB APPSRC
 )
 
 add_executable(Light2DApp ${APPSRC})
-target_link_libraries(Light2DApp libglw ${SDL2_LIBRARY} ${SDL2_SDLMAIN_LIBRARY})
+target_link_libraries(Light2DApp libglw LibLight2D ${SDL2_LIBRARY} ${SDL2_SDLMAIN_LIBRARY})
 target_include_directories(Light2DApp 
     PUBLIC ${SDL2_INCLUDE_DIR}
 )

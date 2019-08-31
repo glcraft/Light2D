@@ -6,6 +6,11 @@ project(Light2D)
 
 add_subdirectory(libglw)
 
+
 add_subdirectory(lib)
 add_subdirectory(app)
 add_dependencies(Light2DApp LibLight2D)
+
+target_include_directories(Light2DApp 
+    PUBLIC "lib"
+)

@@ -2,6 +2,7 @@
 #include <libglw/GLClass.h>
 #include <libglw/Shaders.h>
 #include "Input.h"
+#include <liblight.h>
 
 #define MAX_NUM_TOTAL_LIGHTS 10
 #define MAX_NUM_TOTAL_WALLS 10
