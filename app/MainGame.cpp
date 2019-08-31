@@ -8,51 +8,7 @@
 #define NBBLOCK 50
 #define SIZE_TERRAIN 30
 
-inline glm::vec2 get_normal(glm::vec2 dir)
-{return glm::vec2(dir.y, -dir.x);}
-Dir setDir(glm::vec2 d)
-{
-    glm::vec2 n = normalize(d);
-    return Dir{n, get_normal(n)};
-}
-inline glm::vec2 getXY(glm::vec4 v)
-{return glm::vec2(v.x, v.y);}
-inline glm::vec2 getZW(glm::vec4 v)
-{return glm::vec2(v.z, v.w);}
-glm::vec4 finding_tangent(glm::vec2 center_circle, float radius, glm::vec2 point)
-{
-    glm::vec2 d = center_circle - point;
-    float dd = length(d);
-    float a = glm::asin(radius / dd);
-    float b = glm::atan(d.y, d.x);
-    
-    float ta = b - a, tb = b + a;
-    glm::vec4 pts=radius * glm::vec4(glm::sin(ta), -glm::cos(ta), -glm::sin(tb), glm::cos(tb));
-    return glm::vec4((center_circle+getXY(pts)-point), (center_circle+getZW(pts)-point));
-}
-WallTangent setWallInfo(Wall& wall, glm::vec2 posLight, float size)
-{
-    // WallInfo wi;
-    // wi.pointLeft = glm::vec2(wall.x, wall.y);
-    // wi.pointRight =  glm::vec2(wall.z, wall.w);
-    // wi.direction=setDir(wi.pointRight-wi.pointLeft);
-    WallTangent wi;
-    
-    if (size>0)
-    {
-        glm::vec4 tan1 = finding_tangent(posLight, size, wall.pointLeft), tan2 = finding_tangent(posLight, size, wall.pointRight);
-        wi.innerLeft = setDir(getXY(tan1));
-        wi.innerRight = setDir(getZW(tan2));
-        wi.outerLeft = setDir(getZW(tan1));
-        wi.outerRight = setDir(getXY(tan2));
-    }
-    else
-    {
-        wi.innerLeft = wi.outerLeft = setDir(posLight-wall.pointLeft);
-        wi.innerRight = wi.outerRight = setDir(posLight-wall.pointRight);
-    }
-    return wi;
-}
+
 
 void MainGame::init()
 {
@@ -124,33 +80,27 @@ void MainGame::init()
     uni_lights.setName("Lights");
     uni_walls.reserve(1);
     uni_walls.setName("Walls");
+
+    li::Manager managerLight;
     
-    const int nblights=3;
-    const int nbwalls=1;
     {
+        using namespace glm;
+        
+        const float size=0.05f, strength=1.0f;
+
+        managerLight.addLight(li::Light(vec2(0.3f, 0.3f), vec3(1,0,0), size, strength));
+        managerLight.addLight(li::Light(vec2(0.5f, 0.3f), vec3(0,1,0), size, strength));
+        managerLight.addLight(li::Light(vec2(0.7f, 0.3f), vec3(0,0,1), size, strength));
+
+        managerLight.addWall(li::Wall(vec2(0.3, 0.7), vec2(0.7,0.7)));
+        managerLight.addWall(li::Wall(vec2(0.45, 0.5), vec2(0.55,0.5)));
+
+        managerLight.updateData();
+
         auto lights = uni_lights.map_write();
         auto walls = uni_walls.map_write();
-        float size=0.01f, strength=3.5f;
-        float top=0.51f;
-        const float spacing = 0.25;
-        const glm::vec2 posLight[3]={glm::vec2(0.5f-spacing, 0.5f), glm::vec2(0.5f, 0.5f), glm::vec2(0.5f+spacing, 0.5f) };
-        const glm::vec3 colLight[3]={glm::vec3(1,0,0), glm::vec3(0,1,0), glm::vec3(0,0,1)};
-        // const glm::vec4 _wall[2]={glm::vec4(0.2,top, 0.45,top+0.1), glm::vec4(0.55,top+0.1, 0.8,top)};
-        const glm::vec4 _wall[2]={glm::vec4(0.2,top, 0.8,top), glm::vec4(0.55,top+0.1, 0.8,top)};
-        for (int iWall = 0;iWall<nbwalls;++iWall)
-        {
-            walls->walls[iWall].pointLeft = getXY(_wall[iWall]);
-            walls->walls[iWall].pointRight = getZW(_wall[iWall]);
-            walls->walls[iWall].direction = setDir(walls->walls[iWall].pointRight - walls->walls[iWall].pointLeft);
-        }
-        for (int iLight=0;iLight<nblights;++iLight)
-        {
-            lights->lights[iLight] = Light{posLight[iLight], glm::vec2(size, strength), glm::vec4(colLight[iLight],1.)};
-            for (int iWall = 0;iWall<nbwalls;++iWall)
-                walls->walltangs[iWall+iLight*nbwalls] = setWallInfo(walls->walls[iWall], lights->lights[iLight].position, lights->lights[iLight].size_strength.x);
-        }
-        lights->numOfLights=nblights;
-        walls->numOfWalls=nbwalls;
+        memcpy(lights, &managerLight.getLightsShader(), sizeof(managerLight.getLightsShader()));
+        memcpy(walls, &managerLight.getWallsShader(), sizeof(managerLight.getWallsShader()));
         uni_walls.unmap();
         uni_lights.unmap();
         
