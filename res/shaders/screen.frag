@@ -88,7 +88,7 @@ void main()
                     float t=cross((q-p), s/(cross(r, s)));
                     vec2 pt = walls[iWall].pointLeft+t*walltangs[idWall].innerLeft.line;
                     float valPT=mix(v2, v1, smoothstep (dot(walltangs[idWall].innerLeft.line, walltangs[idWall].innerRight.line), 1, dot(normalize(pt - uv), walltangs[idWall].innerRight.line)));
-                    valwhite=valPT;
+                    valwhite-=1-valPT;
                 }
                 else 
                 {
