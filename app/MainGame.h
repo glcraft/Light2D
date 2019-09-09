@@ -12,6 +12,7 @@ public:
     void display();
 private:
     void glxinfo();
+    void updateLiInfo();
     using VBOType = gl::ArrayBuffer<glm::vec2>;
     Input m_input;
     struct _Shader
@@ -24,4 +25,7 @@ private:
     gl::Texture m_fbotex;
     gl::UniformBuffer<li::shader::Lights<10>> uni_lights;
     gl::UniformBuffer<li::shader::Walls<10, 10>> uni_walls;
+
+    li::Manager::ID m_wallID;
+    li::Manager m_managerLight;
 };

@@ -66,17 +66,28 @@ namespace li
         return shader::Light{m_position, glm::vec2(m_size, m_strength), glm::vec4(m_color,1.)}; // posLight[iLight], glm::vec2(size, strength), glm::vec4(colLight[iLight],1.)};
     }
 
-    void Manager::updateData()
+    bool Manager::updateData()
     {
-        for (int iWall = 0;iWall<m_walls.size();++iWall)
-            m_shadWalls.walls[iWall] = m_walls[iWall].getShaderWall();
-        for (int iLight=0;iLight<m_lights.size();++iLight)
+        if (!m_update)
+            return false;
+        ID posWall=0;
+        for(const auto& [id, wall] : m_walls.data)
+            m_shadWalls.walls[posWall++] = wall->getShaderWall();
+        posWall=0;
+        ID posLight=0, posWallLight=0;
+        for(const auto& [idLight, light] : m_lights.data)
         {
-            m_shadLights.lights[iLight] = m_lights[iLight].getShaderLight();
-            for (int iWall = 0;iWall<m_walls.size();++iWall)
-                m_shadWalls.walltangs[iWall+iLight*m_walls.size()] = setWallInfo(m_shadWalls.walls[iWall], m_shadLights.lights[iLight].position, m_shadLights.lights[iLight].size_strength.x);
+            m_shadLights.lights[posLight] = light->getShaderLight();
+            posWall=0;
+            for(const auto& [idWall, wall] : m_walls.data)
+            {
+                m_shadWalls.walltangs[posWallLight++] = setWallInfo(m_shadWalls.walls[posWall], m_shadLights.lights[posLight].position, m_shadLights.lights[posLight].size_strength.x);
+                ++posWall;
+            }
+            ++posLight;
         }
-        m_shadLights.numOfLights=m_lights.size();
-        m_shadWalls.numOfWalls=m_walls.size();
+        m_shadLights.numOfLights=m_lights.data.size();
+        m_shadWalls.numOfWalls=m_walls.data.size();
+        return true;
     }
 }

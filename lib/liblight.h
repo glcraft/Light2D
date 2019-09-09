@@ -1,5 +1,6 @@
 #include <glm/glm.hpp>
-#include <vector>
+#include <memory>
+#include <map>
 
 #define MAX_NUM_TOTAL_LIGHTS 10
 #define MAX_NUM_TOTAL_WALLS 10
@@ -81,17 +82,43 @@ namespace li
     class Manager
     {
     public:
-        void addLight(Light&& light){ m_lights.push_back(light); m_update=true; }
-        void addWall(Wall&& wall){ m_walls.push_back(wall); m_update=true; }
-
+        using ID = std::size_t;
+        ID addLight(Light&& light)
+        { 
+            auto t = m_lights.data.insert({m_lights.currentID++, std::make_unique<Light>(light)});
+            m_update=true;
+            return t.first->first;
+        }
+        ID addWall(Wall&& wall)
+        { 
+            auto t = m_walls.data.insert({m_walls.currentID++, std::make_unique<Wall>(wall)});
+            m_update=true;
+            return t.first->first; 
+        }
+        Light& getLight(ID id)
+        {
+            return *m_lights.data.at(id);
+        }
+        Wall& getWall(ID id)
+        {
+            return *m_walls.data.at(id);
+        }
         const shader::Lights<10> & getLightsShader() { return m_shadLights; }
         const shader::Walls<10,10> & getWallsShader() { return m_shadWalls; }
+
         bool hasUpdateData() { return m_update; }
-        void updateData();
+        void forceUpdateData() { m_update = true; }
+        bool updateData();
 
     protected:
-        std::vector<Light> m_lights;
-        std::vector<Wall> m_walls;
+        template<typename Obj>
+        struct Container
+        {
+            std::map<ID, std::unique_ptr<Obj>> data;
+            ID currentID = 1;
+        };
+        Container<Light> m_lights;
+        Container<Wall> m_walls;
         shader::Lights<10> m_shadLights;
         shader::Walls<10,10> m_shadWalls;
         bool m_update;

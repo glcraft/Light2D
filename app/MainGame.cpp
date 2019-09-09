@@ -81,26 +81,26 @@ void MainGame::init()
     uni_walls.reserve(1);
     uni_walls.setName("Walls");
 
-    li::Manager managerLight;
+    
     
     {
         using namespace glm;
         
         const float size=0.05f, strength=1.0f;
 
-        managerLight.addLight(li::Light(vec2(0.3f, 0.3f), vec3(1,0,0), size, strength));
-        managerLight.addLight(li::Light(vec2(0.5f, 0.3f), vec3(0,1,0), size, strength));
-        managerLight.addLight(li::Light(vec2(0.7f, 0.3f), vec3(0,0,1), size, strength));
+        m_managerLight.addLight(li::Light(vec2(0.3f, 0.3f), vec3(1,0,0), size, strength));
+        m_managerLight.addLight(li::Light(vec2(0.5f, 0.3f), vec3(0,1,0), size, strength));
+        m_managerLight.addLight(li::Light(vec2(0.7f, 0.3f), vec3(0,0,1), size, strength));
 
-        managerLight.addWall(li::Wall(vec2(0.3, 0.7), vec2(0.7,0.7)));
-        managerLight.addWall(li::Wall(vec2(0.45, 0.5), vec2(0.55,0.5)));
+        m_managerLight.addWall(li::Wall(vec2(0.3, 0.7), vec2(0.7,0.7)));
+        m_wallID = m_managerLight.addWall(li::Wall(vec2(0.45, 0.5), vec2(0.55,0.5)));
 
-        managerLight.updateData();
+        m_managerLight.updateData();
 
         auto lights = uni_lights.map_write();
         auto walls = uni_walls.map_write();
-        memcpy(lights, &managerLight.getLightsShader(), sizeof(managerLight.getLightsShader()));
-        memcpy(walls, &managerLight.getWallsShader(), sizeof(managerLight.getWallsShader()));
+        memcpy(lights, &m_managerLight.getLightsShader(), sizeof(m_managerLight.getLightsShader()));
+        memcpy(walls, &m_managerLight.getWallsShader(), sizeof(m_managerLight.getWallsShader()));
         uni_walls.unmap();
         uni_lights.unmap();
         
@@ -138,13 +138,18 @@ void MainGame::display()
     auto time0 = std::chrono::steady_clock::now();
 
     glViewport(0,0,m_input.getWindowData().size.x, m_input.getWindowData().size.y);
-
+    auto& wall = m_managerLight.getWall(m_wallID);
     while(!quit)
     {
+        
         std::chrono::duration<float, std::ratio<1,1>> current_time(std::chrono::steady_clock::now()-time0);
         Input::update();
         if (m_input.getKeyPressed(SDL_SCANCODE_ESCAPE)||m_input.getWindowData().closed)
             quit=true;
+        glm::vec2 displ(glm::cos(current_time.count())*0.05f, glm::sin(current_time.count())*0.05f);
+        wall.setPositions(glm::vec2(0.5f)+displ, glm::vec2(0.5f)-displ);
+        m_managerLight.forceUpdateData();
+        updateLiInfo();
         
         glClear(GL_COLOR_BUFFER_BIT);
         m_program.screen << gl::sl::use
@@ -167,4 +172,16 @@ void MainGame::glxinfo()
     GLDISP_INT(GL_MAX_UNIFORM_BUFFER_BINDINGS)
     GLDISP_INT(GL_MAX_UNIFORM_LOCATIONS)
     std::cout << "\n\n";
+}
+void MainGame::updateLiInfo()
+{
+    if (m_managerLight.updateData())
+    {
+        auto lights = uni_lights.map_write();
+        auto walls = uni_walls.map_write();
+        memcpy(lights, &m_managerLight.getLightsShader(), sizeof(m_managerLight.getLightsShader()));
+        memcpy(walls, &m_managerLight.getWallsShader(), sizeof(m_managerLight.getWallsShader()));
+        uni_walls.unmap();
+        uni_lights.unmap();
+    }
 }
