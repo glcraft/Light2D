@@ -9,26 +9,27 @@ namespace li
 {
     namespace shader
     {
+        using namespace glm;
         struct Dir
         {
-            glm::vec2 line;
-            glm::vec2 normal;
+            vec2 line;
+            vec2 normal;
         };
         struct Wall
         {
-            glm::vec2 pointLeft, pointRight;
+            vec2 pointLeft, pointRight;
             Dir direction;
         };
         struct WallTangent
         {
-            glm::vec2 innerLeft, innerRight;
-            glm::vec2 outerLeft, outerRight;
+            vec2 innerLeft, innerRight;
+            vec2 outerLeft, outerRight;
         };
         struct Light
         {
-            glm::vec2 position;
-            glm::vec2 size_strength;
-            glm::vec4 color;
+            vec2 position;
+            vec2 size_strength;
+            vec4 color;
         };
         template<int nb_lights>
         struct Lights
