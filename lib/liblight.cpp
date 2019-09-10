@@ -65,7 +65,22 @@ namespace li
     {
         return shader::Light{m_position, glm::vec2(m_size, m_strength), glm::vec4(m_color,1.)}; // posLight[iLight], glm::vec2(size, strength), glm::vec4(colLight[iLight],1.)};
     }
-
+    Manager::Manager()
+    {
+        m_update=std::make_shared<bool>(false);
+    }
+    Manager::ID Manager::addLight(Light&& light)
+    { 
+        auto t = m_lights.data.insert({m_lights.currentID++, std::make_unique<Light>(light)});
+        t.first->second->setUpdater(m_update);
+        return t.first->first;
+    }
+    Manager::ID Manager::addWall(Wall&& wall)
+    { 
+        auto t = m_walls.data.insert({m_walls.currentID++, std::make_unique<Wall>(wall)});
+        t.first->second->setUpdater(m_update);
+        return t.first->first; 
+    }
     bool Manager::updateData()
     {
         if (!m_update)

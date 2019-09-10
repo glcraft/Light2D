@@ -46,17 +46,25 @@ namespace li
     }
     using glm::vec2;
     using glm::vec3;
-    class Light
+    class ShapeUpdate
+    {
+    public:
+        void setUpdater (std::shared_ptr<bool> updater){ m_updater = updater; *m_updater = true; }
+    protected:
+        void updateShape(){if (m_updater) *m_updater=true; }
+        std::shared_ptr<bool> m_updater;
+    };
+    class Light : public ShapeUpdate
     {
     public:
         Light(vec2 pos=vec2(0.f), vec3 col=vec3(1.f,1.f,1.f), float size=0.0f, float strength=1.0f);
-        void setPosition(vec2 _pos)         { m_position =_pos; }
+        void setPosition(vec2 _pos)         { m_position =_pos; updateShape(); }
         vec2 getPosition()                  { return m_position; }
-        void setSize(float _size)           { m_size = _size; }
+        void setSize(float _size)           { m_size = _size; updateShape(); }
         float getSize()                     { return m_size; }
-        void setStrength(float _strength)   { m_strength = _strength; }
+        void setStrength(float _strength)   { m_strength = _strength; updateShape(); }
         float getStrength()                 { return m_strength; }
-        void setColor(vec3 _col)            { m_color =_col; }
+        void setColor(vec3 _col)            { m_color =_col; updateShape(); }
         vec3 getColor()                     { return m_color; }
         shader::Light getShaderLight();
     protected:
@@ -64,11 +72,11 @@ namespace li
         vec3 m_color;
         float m_size=0.f, m_strength=1.f;
     };
-    class Wall
+    class Wall : public ShapeUpdate
     {
     public:
         Wall(vec2 _pos1=vec2(0.f), vec2 _pos2=vec2(0.f));
-        void setPositions(vec2 _pos1, vec2 _pos2)   { m_pos1=_pos1; m_pos2=_pos2; }
+        void setPositions(vec2 _pos1, vec2 _pos2)   { m_pos1=_pos1; m_pos2=_pos2; updateShape(); }
         glm::vec2 getPoint1() { return m_pos1; }
         glm::vec2 getPoint2() { return m_pos2; }
         vec2 getDirection() { return glm::normalize(m_pos2-m_pos1); }
@@ -82,19 +90,10 @@ namespace li
     class Manager
     {
     public:
+        Manager();
         using ID = std::size_t;
-        ID addLight(Light&& light)
-        { 
-            auto t = m_lights.data.insert({m_lights.currentID++, std::make_unique<Light>(light)});
-            m_update=true;
-            return t.first->first;
-        }
-        ID addWall(Wall&& wall)
-        { 
-            auto t = m_walls.data.insert({m_walls.currentID++, std::make_unique<Wall>(wall)});
-            m_update=true;
-            return t.first->first; 
-        }
+        ID addLight(Light&& light);
+        ID addWall(Wall&& wall);
         Light& getLight(ID id)
         {
             return *m_lights.data.at(id);
@@ -106,8 +105,8 @@ namespace li
         const shader::Lights<10> & getLightsShader() { return m_shadLights; }
         const shader::Walls<10,10> & getWallsShader() { return m_shadWalls; }
 
-        bool hasUpdateData() { return m_update; }
-        void forceUpdateData() { m_update = true; }
+        bool hasUpdateData() { return *m_update; }
+        void forceUpdateData() { *m_update = true; }
         bool updateData();
 
     protected:
@@ -121,6 +120,6 @@ namespace li
         Container<Wall> m_walls;
         shader::Lights<10> m_shadLights;
         shader::Walls<10,10> m_shadWalls;
-        bool m_update;
+        std::shared_ptr<bool> m_update;
     };
 }
