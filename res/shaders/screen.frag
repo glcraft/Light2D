@@ -74,17 +74,21 @@ void main()
                 valwhite=0.0;
             else
 #endif
-            if (distLightUV>size_and_strength)//
+            // Le fragment dépasse la limite de la source lumineuse
+            if (distLightUV>size_and_strength)
                 newValWhite=0.0;
-            else if (dot(walltangs[idWall].outerLeft, walls[iWall].direction.normal)<0 || dot(walltangs[idWall].outerRight, walls[iWall].direction.normal)<0) continue;
+            // else if (dot(walltangs[idWall].outerLeft, walls[iWall].direction.normal)<0 || dot(walltangs[idWall].outerRight, walls[iWall].direction.normal)<0) continue;
+            // La fragment est entre la lumière et le mur
             else if (dot((uv-walls[iWall].pointLeft), walls[iWall].direction.normal)>0);
+            // Le fragment est derrière le mur par rapport à la lumière
             else if (dot(get_normal(walltangs[idWall].innerLeft), walls[iWall].pointLeft - uv)>0 && dot(get_normal(walltangs[idWall].innerRight), walls[iWall].pointRight - uv)<0)
             {
                 newValWhite=0.;
             }
-                
+            // Le fragment se situe à l'extérieur des inner
             else if (lights[iLight].size_strength.x>0.)
             {
+                // Le fragment se situe après le croisement des inner (dans le cas ou la source lumineuse est plus grosse que le mur)
                 if (dot(get_normal(walltangs[idWall].innerLeft), walls[iWall].pointLeft - uv)<0 && dot(get_normal(walltangs[idWall].innerRight), walls[iWall].pointRight - uv)>0)
                 {
                     // InnerLeft et InnerRight se croisent, s'en occuper plus tard
@@ -99,8 +103,10 @@ void main()
                 }
                 else 
                 {
+                    // Le fragment est dans la transition gauche
                     if (dot(get_normal(walltangs[idWall].innerLeft), walls[iWall].pointLeft - uv)<0 && dot(get_normal(walltangs[idWall].outerLeft), walls[iWall].pointLeft - uv)>0)
                         newValWhite=smoothstep (dot(walltangs[idWall].innerLeft, walltangs[idWall].outerLeft), 1, dot(normalize(walls[iWall].pointLeft - uv), walltangs[idWall].outerLeft));
+                    // Le fragment est dans la transition droite
                     if (dot(get_normal(walltangs[idWall].innerRight), walls[iWall].pointRight - uv)>0 && dot(get_normal(walltangs[idWall].outerRight), walls[iWall].pointRight - uv)<0)
                         newValWhite=smoothstep (dot(walltangs[idWall].innerRight, walltangs[idWall].outerRight), 1, dot(normalize(walls[iWall].pointRight - uv), walltangs[idWall].outerRight));
                 }
