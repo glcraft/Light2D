@@ -62,18 +62,20 @@ void main()
 
         for(int iWall=0;iWall<nbWalls;++iWall)
         {
+            float newValWhite=1.0;
             int idWall = iLight*nbWalls+iWall;
 #if DEBUG
             if (distLightUV<=lights[iLight].size_strength.x)//
-                valwhite=0.0;
+                newValWhite=0.0;
             else
 #endif
             if (distLightUV>size_and_strength)//
-                valwhite=0.0;
+                newValWhite=0.0;
+            else if (dot(walltangs[idWall].outerLeft.line, walls[iWall].direction.normal)<0 || dot(walltangs[idWall].outerRight.line, walls[iWall].direction.normal)<0) continue;
             else if (dot((uv-walls[iWall].pointLeft), walls[iWall].direction.normal)>0);
             else if (dot(walltangs[idWall].innerLeft.normal, walls[iWall].pointLeft - uv)>0 && dot(walltangs[idWall].innerRight.normal, walls[iWall].pointRight - uv)<0)
             {
-                valwhite=0.;
+                newValWhite=0.;
             }
                 
             else if (lights[iLight].size_strength.x>0.)
@@ -88,17 +90,18 @@ void main()
                     float t=cross((q-p), s/(cross(r, s)));
                     vec2 pt = walls[iWall].pointLeft+t*walltangs[idWall].innerLeft.line;
                     float valPT=mix(v2, v1, smoothstep (dot(walltangs[idWall].innerLeft.line, walltangs[idWall].innerRight.line), 1, dot(normalize(pt - uv), walltangs[idWall].innerRight.line)));
-                    valwhite-=1-valPT;
+                    newValWhite=valPT;
                 }
                 else 
                 {
                     if (dot(walltangs[idWall].innerLeft.normal, walls[iWall].pointLeft - uv)<0 && dot(walltangs[idWall].outerLeft.normal, walls[iWall].pointLeft - uv)>0)
-                        valwhite-=1-smoothstep (dot(walltangs[idWall].innerLeft.line, walltangs[idWall].outerLeft.line), 1, dot(normalize(walls[iWall].pointLeft - uv), walltangs[idWall].outerLeft.line));
+                        newValWhite=smoothstep (dot(walltangs[idWall].innerLeft.line, walltangs[idWall].outerLeft.line), 1, dot(normalize(walls[iWall].pointLeft - uv), walltangs[idWall].outerLeft.line));
                     if (dot(walltangs[idWall].innerRight.normal, walls[iWall].pointRight - uv)>0 && dot(walltangs[idWall].outerRight.normal, walls[iWall].pointRight - uv)<0)
-                        valwhite-=1-smoothstep (dot(walltangs[idWall].innerRight.line, walltangs[idWall].outerRight.line), 1, dot(normalize(walls[iWall].pointRight - uv), walltangs[idWall].outerRight.line));
+                        newValWhite=smoothstep (dot(walltangs[idWall].innerRight.line, walltangs[idWall].outerRight.line), 1, dot(normalize(walls[iWall].pointRight - uv), walltangs[idWall].outerRight.line));
                 }
                 
             }
+            valwhite-=(1-newValWhite);
         }
         if (valwhite>0.)
             finalColor+=lights[iLight].color.xyz*clamp01(valwhite)*clamp01((size_and_strength-distLightUV)/lights[iLight].size_strength.y);
