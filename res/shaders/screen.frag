@@ -67,7 +67,7 @@ void main()
             int idWall = iLight*nbWalls+iWall;
 #if DEBUG
             if (distLightUV<=lights[iLight].size_strength.x)//
-                newValWhite=0.0;
+                valwhite=0.0;
             else
 #endif
             if (distLightUV>size_and_strength)//
