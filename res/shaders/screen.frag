@@ -18,6 +18,7 @@ struct WallTangent
 {
     Dir innerLeft, innerRight;
     Dir outerLeft, outerRight;
+    
 };
 struct Light
 {
@@ -59,7 +60,7 @@ void main()
         float valwhite=1;
         float distLightUV = distance(lights[iLight].position, uv);
         float size_and_strength = lights[iLight].size_strength.y+lights[iLight].size_strength.x;
-
+        
         for(int iWall=0;iWall<nbWalls;++iWall)
         {
             float newValWhite=1.0;
@@ -101,7 +102,8 @@ void main()
                 }
                 
             }
-            valwhite-=(1-newValWhite);
+            float attenuation = clamp01(min(dot(walltangs[idWall].outerLeft.line, walls[iWall].direction.normal),dot(walltangs[idWall].outerRight.line, walls[iWall].direction.normal))*5.);
+            valwhite-=(1-newValWhite)*attenuation;
         }
         if (valwhite>0.)
             finalColor+=lights[iLight].color.xyz*clamp01(valwhite)*clamp01((size_and_strength-distLightUV)/lights[iLight].size_strength.y);
