@@ -131,9 +131,6 @@ void MainGame::init()
 void MainGame::display()
 {
     bool quit=false;
-    glm::mat4 prmat(0.1f);
-    prmat[3][3]=1;
-    gl::UniformStatic<glm::mat4> uni_viewmat("viewmat", glm::mat4(1.f)), uni_projmat("projmat", glm::ortho<float>(0, SIZE_TERRAIN, SIZE_TERRAIN, 0, -1, 1));
     glClearColor(1,1,1,1);
     auto time0 = std::chrono::steady_clock::now();
 
@@ -141,12 +138,11 @@ void MainGame::display()
     auto& wall = m_managerLight.getWall(m_wallID);
     while(!quit)
     {
-        
         std::chrono::duration<float, std::ratio<1,1>> current_time(std::chrono::steady_clock::now()-time0);
         Input::update();
         if (m_input.getKeyPressed(SDL_SCANCODE_ESCAPE)||m_input.getWindowData().closed)
             quit=true;
-        glm::vec2 displ(glm::cos(current_time.count())*0.05f, glm::sin(current_time.count())*0.05f);
+        glm::vec2 displ(glm::cos(current_time.count()*0.5)*0.05f, glm::sin(current_time.count()*0.5)*0.05f);
         wall.setPositions(glm::vec2(0.5f)+displ, glm::vec2(0.5f)-displ);
         m_managerLight.forceUpdateData();
         updateLiInfo();
