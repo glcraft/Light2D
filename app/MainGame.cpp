@@ -7,6 +7,7 @@
 
 #define NBBLOCK 50
 #define SIZE_TERRAIN 30
+#define TEST_NWALLS 1
 
 
 
@@ -84,15 +85,24 @@ void MainGame::init()
     {
         using namespace glm;
         
-        const float size=0.02f, strength=.5f;
+        const float size=0.0f, strength=2.7f;
 
-        m_managerLight.addLight(li::Light(vec2(0.3f, 0.3f), vec3(1,0,0), size, strength));
-        m_managerLight.addLight(li::Light(vec2(0.5f, 0.7f), vec3(0,1,0), size, strength));
-        m_managerLight.addLight(li::Light(vec2(0.7f, 0.3f), vec3(0,0,1), size, strength));
-
-        // m_managerLight.addWall(li::Wall(vec2(0.3, 0.7), vec2(0.7,0.7)));
-        m_IDwall1 = m_managerLight.addWall(li::Wall(vec2(0.45, 0.5), vec2(0.55,0.5)));
-        m_IDwall2 = m_managerLight.addWall(li::Wall(vec2(0.55, 0.5), vec2(0.45,0.5)));
+        glm::vec2 center(0.5f);
+        for (int i=0;i<3;i++)
+        {
+            float angle1 = (static_cast<float>(i)/3)*glm::pi<float>()*2.f;
+            glm::vec2 displac1(cos(angle1), sin(angle1));
+            m_managerLight.addLight(li::Light(center+displac1*0.3f, vec3(i==0, i==1, i==2), size, strength));
+            
+        }
+        for (int i=0;i<TEST_NWALLS;i++)
+        {
+            float angle1 = (static_cast<float>(i)/3)*glm::pi<float>()*2.f;
+            float angle2 = (static_cast<float>(i+1)/3)*glm::pi<float>()*2.f;
+            glm::vec2 displac1(cos(angle1), sin(angle1));
+            glm::vec2 displac2(cos(angle2), sin(angle2));
+            m_IDwall[i] = m_managerLight.addWall(li::Wall(center+displac1*0.2f, center+displac2*0.2f));
+        }
 
         m_managerLight.updateData();
 
@@ -134,18 +144,28 @@ void MainGame::display()
     auto time0 = std::chrono::steady_clock::now();
 
     glViewport(0,0,m_input.getWindowData().size.x, m_input.getWindowData().size.y);
-    auto& wall1 = m_managerLight.getWall(m_IDwall1);
-    auto& wall2 = m_managerLight.getWall(m_IDwall2);
+    std::array<li::Wall*, 3>  arrWalls={
+        &m_managerLight.getWall(m_IDwall[0]),
+        // &m_managerLight.getWall(m_IDwall[1]),
+        // &m_managerLight.getWall(m_IDwall[2])
+    };
+    
     while(!quit)
     {
         std::chrono::duration<float, std::ratio<1,1>> current_time(std::chrono::steady_clock::now()-time0);
         Input::update();
         if (m_input.getKeyPressed(SDL_SCANCODE_ESCAPE)||m_input.getWindowData().closed)
             quit=true;
-        glm::vec2 displ(glm::cos(current_time.count()*0.5)*0.05f, glm::sin(current_time.count()*0.5)*0.05f);
-        wall1.setPositions(glm::vec2(0.5f)+displ, glm::vec2(0.5f)-displ);
-        wall2.setPositions(glm::vec2(0.5f)-displ, glm::vec2(0.5f)+displ);
-        
+        glm::vec2 displ(glm::cos(current_time.count()*0.5)*0.15f, glm::sin(current_time.count()*0.5)*0.15f);
+        const glm::vec2 center(0.5f);
+        for (int i=0;i<TEST_NWALLS;i++)
+        {
+            float angle1 = (static_cast<float>(i)/3+current_time.count()*0.05f)*glm::pi<float>()*2.f;
+            float angle2 = (static_cast<float>(i+1)/3+current_time.count()*0.05f)*glm::pi<float>()*2.f;
+            glm::vec2 displac1(cos(angle1), sin(angle1));
+            glm::vec2 displac2(cos(angle2), sin(angle2));
+            arrWalls[i]->setPositions(center+displac1*0.2f, center+displac2*0.2f);
+        }
         updateLiInfo();
         
         glClear(GL_COLOR_BUFFER_BIT);

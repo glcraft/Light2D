@@ -26,6 +26,6 @@ private:
     gl::UniformBuffer<li::shader::Lights<10>> uni_lights;
     gl::UniformBuffer<li::shader::Walls<10, 10>> uni_walls;
 
-    li::Manager::ID m_IDwall1, m_IDwall2;
+    li::Manager::ID m_IDwall[3];
     li::Manager m_managerLight;
 };
