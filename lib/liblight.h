@@ -21,8 +21,8 @@ namespace li
         };
         struct WallTangent
         {
-            Dir innerLeft, innerRight;
-            Dir outerLeft, outerRight;
+            glm::vec2 innerLeft, innerRight;
+            glm::vec2 outerLeft, outerRight;
         };
         struct Light
         {

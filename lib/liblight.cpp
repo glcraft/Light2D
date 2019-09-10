@@ -30,15 +30,15 @@ namespace li
         if (size>0)
         {
             glm::vec4 tan1 = finding_tangent(posLight, size, left), tan2 = finding_tangent(posLight, size, right);
-            wi.innerLeft = setDir(getXY(tan1));
-            wi.innerRight = setDir(getZW(tan2));
-            wi.outerLeft = setDir(getZW(tan1));
-            wi.outerRight = setDir(getXY(tan2));
+            wi.innerLeft = normalize(getXY(tan1));
+            wi.innerRight = normalize(getZW(tan2));
+            wi.outerLeft = normalize(getZW(tan1));
+            wi.outerRight = normalize(getXY(tan2));
         }
         else
         {
-            wi.innerLeft = wi.outerLeft = setDir(posLight-left);
-            wi.innerRight = wi.outerRight = setDir(posLight-right);
+            wi.innerLeft = wi.outerLeft = normalize(posLight-left);
+            wi.innerRight = wi.outerRight = normalize(posLight-right);
         }
         return wi;
     }
