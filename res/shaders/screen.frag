@@ -106,8 +106,7 @@ void main()
                 }
                 
             }
-            float attenuation = clamp01(min(dot(walltangs[idWall].outerLeft, walls[iWall].direction.normal),dot(walltangs[idWall].outerRight, walls[iWall].direction.normal))*5.);
-            valwhite-=(1-newValWhite)*attenuation;
+            valwhite-=(1-newValWhite);
         }
         if (valwhite>0.)
             finalColor+=lights[iLight].color.xyz*clamp01(valwhite)*clamp01((size_and_strength-distLightUV)/lights[iLight].size_strength.y);
