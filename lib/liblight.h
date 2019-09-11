@@ -22,8 +22,9 @@ namespace li
         };
         struct WallTangent
         {
-            vec2 innerLeft, innerRight;
-            vec2 outerLeft, outerRight;
+            vec2 inner[2];
+            vec2 outer[2];
+            ivec4 sens;
         };
         struct Light
         {

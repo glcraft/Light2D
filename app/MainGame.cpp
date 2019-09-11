@@ -7,7 +7,7 @@
 
 #define NBBLOCK 50
 #define SIZE_TERRAIN 30
-#define TEST_NWALLS 1
+#define TEST_NWALLS 2
 
 
 
@@ -85,7 +85,7 @@ void MainGame::init()
     {
         using namespace glm;
         
-        const float size=0.0f, strength=2.7f;
+        const float size=0.02f, strength=1.0f;
 
         glm::vec2 center(0.5f);
         for (int i=0;i<3;i++)
@@ -144,11 +144,9 @@ void MainGame::display()
     auto time0 = std::chrono::steady_clock::now();
 
     glViewport(0,0,m_input.getWindowData().size.x, m_input.getWindowData().size.y);
-    std::array<li::Wall*, 3>  arrWalls={
-        &m_managerLight.getWall(m_IDwall[0]),
-        // &m_managerLight.getWall(m_IDwall[1]),
-        // &m_managerLight.getWall(m_IDwall[2])
-    };
+    std::array<li::Wall*, 3>  arrWalls;
+    for (int i=0;i<TEST_NWALLS;i++)
+        arrWalls[i] = &m_managerLight.getWall(m_IDwall[i]);
     
     while(!quit)
     {
