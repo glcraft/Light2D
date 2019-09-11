@@ -101,6 +101,7 @@ void main()
             // Si la taille de la lumière n'est pas nulle.
             else if (lights[iLight].size_strength.x>0.)
             {
+                
                 // Le fragment se situe après le croisement des inner (dans le cas ou la source lumineuse est plus grosse que le mur)
                 if (dot(get_normal(walltangs[idWall].innerLeft), wall_pointLeft - uv)<0 && dot(get_normal(walltangs[idWall].innerRight), wall_pointRight - uv)>0)
                 {
@@ -111,6 +112,7 @@ void main()
                     vec2 p = wall_pointLeft, r=walltangs[idWall].innerLeft, q=wall_pointRight, s=walltangs[idWall].innerRight;
                     float t=cross((q-p), s/(cross(r, s)));
                     vec2 pt = wall_pointLeft+t*walltangs[idWall].innerLeft;
+                    
                     float valPT=mix(v2, v1, smoothstep (dot(walltangs[idWall].innerLeft, walltangs[idWall].innerRight), 1, dot(normalize(pt - uv), walltangs[idWall].innerRight)));
                     newValWhite=valPT;
                 }
@@ -119,14 +121,12 @@ void main()
                     // Le fragment est dans la transition gauche
                     if (dot(get_normal(walltangs[idWall].innerLeft), wall_pointLeft - uv)<0 && dot(get_normal(walltangs[idWall].outerLeft), wall_pointLeft - uv)>0)
                     {
-                        if (dot(walltangs[idWall].outerLeft, wall_normal)>0)
-                            newValWhite=smoothstep (dot(walltangs[idWall].innerLeft, walltangs[idWall].outerLeft), 1, dot(normalize(wall_pointLeft - uv), walltangs[idWall].outerLeft));
+                        newValWhite=smoothstep (dot(walltangs[idWall].innerLeft, walltangs[idWall].outerLeft), 1, dot(normalize(wall_pointLeft - uv), walltangs[idWall].outerLeft));
                     }
                     // Le fragment est dans la transition droite
                     if (dot(get_normal(walltangs[idWall].innerRight), wall_pointRight - uv)>0 && dot(get_normal(walltangs[idWall].outerRight), wall_pointRight - uv)<0)
                     {
-                        if (dot(walltangs[idWall].outerRight, wall_normal)>0)
-                            newValWhite=smoothstep (dot(walltangs[idWall].innerRight, walltangs[idWall].outerRight), 1, dot(normalize(wall_pointRight - uv), walltangs[idWall].outerRight));
+                        newValWhite=smoothstep (dot(walltangs[idWall].innerRight, walltangs[idWall].outerRight), 1, dot(normalize(wall_pointRight - uv), walltangs[idWall].outerRight));
                     }
                 }
                 
