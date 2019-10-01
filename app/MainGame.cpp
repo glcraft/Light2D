@@ -4,7 +4,7 @@
 #include <chrono>
 #include <GL/glew.h>
 #include <glm/gtc/matrix_transform.hpp>
-#include <nlohmann/json.hpp>
+#include "JsonToValue.hpp"
 
 #define NBBLOCK 50
 #define SIZE_TERRAIN 30
@@ -170,57 +170,8 @@ void MainGame::updateLiInfo()
         uni_lights.unmap();
     }
 }
-template<typename ValueType>
-class JSONToValue
-{
-public:
-    JSONToValue() : m_value()
-    {
 
-    }
-    template <typename ...Args>
-    JSONToValue(Args... args) : m_value(args...)
-    {
-        
-    }
-    void set(nlohmann::json jsValue)
-    {
-        m_jsValue = jsValue;
-        update();
-    }
-    void update();
-    operator ValueType()
-    {
-        return m_value;
-    }
-private:
-    nlohmann::json m_jsValue;
-    ValueType m_value;
-};
-template<>
-void JSONToValue<glm::vec2>::update()
-{
-    if (m_jsValue.is_null())
-        return;
-    m_value.x = m_jsValue["x"];
-    m_value.y = m_jsValue["y"];
-}
-template<>
-void JSONToValue<glm::vec3>::update()
-{
-    if (m_jsValue.is_null())
-        return;
-    m_value.r = m_jsValue["r"];
-    m_value.g = m_jsValue["g"];
-    m_value.b = m_jsValue["b"];
-}
-template<>
-void JSONToValue<float>::update()
-{
-    if (m_jsValue.is_null())
-        return;
-    m_value = m_jsValue;
-}
+
 void MainGame::load_json()
 {
     namespace nl = nlohmann;
