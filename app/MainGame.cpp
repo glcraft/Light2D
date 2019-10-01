@@ -4,6 +4,7 @@
 #include <chrono>
 #include <GL/glew.h>
 #include <glm/gtc/matrix_transform.hpp>
+#include <nlohmann/json.hpp>
 
 #define NBBLOCK 50
 #define SIZE_TERRAIN 30
@@ -85,6 +86,7 @@ void MainGame::init()
 
     {
         using namespace glm;
+        load_json();
         
         const float size=0.1f, strength=1.0f;
 
@@ -199,5 +201,85 @@ void MainGame::updateLiInfo()
         memcpy(walls, &m_managerLight.getWallsShader(), sizeof(m_managerLight.getWallsShader()));
         uni_walls.unmap();
         uni_lights.unmap();
+    }
+}
+template<typename ValueType>
+class JSONToValue
+{
+public:
+    JSONToValue() : m_value()
+    {
+
+    }
+    template <typename ...Args>
+    JSONToValue(Args... args) : m_value(args...)
+    {
+        
+    }
+    void set(nlohmann::json jsValue)
+    {
+        m_jsValue = jsValue;
+        update();
+    }
+    void update();
+    operator ValueType()
+    {
+        return m_value;
+    }
+private:
+    nlohmann::json m_jsValue;
+    ValueType m_value;
+};
+template<>
+void JSONToValue<glm::vec2>::update()
+{
+    if (m_jsValue.is_null())
+        return;
+    m_value.x = m_jsValue["x"];
+    m_value.y = m_jsValue["y"];
+}
+template<>
+void JSONToValue<glm::vec3>::update()
+{
+    if (m_jsValue.is_null())
+        return;
+    m_value.r = m_jsValue["r"];
+    m_value.g = m_jsValue["g"];
+    m_value.b = m_jsValue["b"];
+}
+template<>
+void JSONToValue<float>::update()
+{
+    if (m_jsValue.is_null())
+        return;
+    m_value = m_jsValue;
+}
+void MainGame::load_json()
+{
+    namespace nl = nlohmann;
+    nl::json jsFile;
+    std::ifstream ifstr("light.json");
+    if (ifstr)
+        ifstr >> jsFile;
+    for (auto& jLight : jsFile["lights"])
+    {
+        JSONToValue<glm::vec2> pos(0.f);
+        JSONToValue<glm::vec3> color(1.f);
+        JSONToValue<float> size(1.f);
+        JSONToValue<float> strength(1.f);
+        pos.set(jLight["position"]);
+        color.set(jLight["color"]);
+        size.set(jLight["size"]);
+        strength.set(jLight["strenght"]);
+
+        m_managerLight.addLight(li::Light(pos, color, size, strength));
+    }
+    for (auto& jWall : jsFile["walls"])
+    {
+        JSONToValue<glm::vec2> pos1(0.f);
+        JSONToValue<glm::vec2> pos2(0.f);
+        pos1.set(jWall["position1"]);
+        pos2.set(jWall["position2"]);
+        m_managerLight.addWall(li::Wall(pos1, pos2));
     }
 }

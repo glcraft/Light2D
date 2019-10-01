@@ -13,6 +13,7 @@ public:
 private:
     void glxinfo();
     void updateLiInfo();
+    void load_json();
     using VBOType = gl::ArrayBuffer<glm::vec2>;
     Input m_input;
     struct _Shader
