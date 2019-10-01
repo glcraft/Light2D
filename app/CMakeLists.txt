@@ -18,3 +18,6 @@ message("libglw include : ${LIBGLW_INCLUDE_DIR}")
 set_target_properties(Light2DApp PROPERTIES
     CXX_STANDARD 17
 )
+if (MSVC)
+    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} /bigobj")
+endif()
