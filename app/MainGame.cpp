@@ -83,29 +83,10 @@ void MainGame::init()
     uni_lights.setName("Lights");
     uni_walls.reserve(1);
     uni_walls.setName("Walls");
-
+    
     {
         using namespace glm;
         load_json();
-        
-        const float size=0.1f, strength=1.0f;
-
-        glm::vec2 center(0.5f);
-        for (int i=0;i<3;i++)
-        {
-            float angle1 = (static_cast<float>(i)/3)*glm::pi<float>()*2.f;
-            glm::vec2 displac1(cos(angle1), sin(angle1));
-            m_managerLight.addLight(li::Light(center+displac1*0.2f, vec3(i==0, i==1, i==2), size, strength));
-            
-        }
-        for (int i=0;i<TEST_NWALLS;i++)
-        {
-            float angle1 = (static_cast<float>(i)/TEST_NCORNER)*glm::pi<float>()*2.f;
-            float angle2 = (static_cast<float>(i+1)/TEST_NCORNER)*glm::pi<float>()*2.f;
-            glm::vec2 displac1(cos(angle1), sin(angle1));
-            glm::vec2 displac2(cos(angle2), sin(angle2));
-            m_IDwall[i] = m_managerLight.addWall(li::Wall(center+displac1*0.2f, center+displac2*0.2f));
-        }
 
         m_managerLight.updateData();
 
@@ -147,9 +128,6 @@ void MainGame::display()
     auto time0 = std::chrono::steady_clock::now();
 
     glViewport(0,0,m_input.getWindowData().size.x, m_input.getWindowData().size.y);
-    std::array<li::Wall*, TEST_NWALLS>  arrWalls;
-    for (int i=0;i<TEST_NWALLS;i++)
-        arrWalls[i] = &m_managerLight.getWall(m_IDwall[i]);
     
     while(!quit)
     {
@@ -157,17 +135,6 @@ void MainGame::display()
         Input::update();
         if (m_input.getKeyPressed(SDL_SCANCODE_ESCAPE)||m_input.getWindowData().closed)
             quit=true;
-        glm::vec2 displ(glm::cos(current_time.count()*0.5)*0.15f, glm::sin(current_time.count()*0.5)*0.15f);
-        const glm::vec2 center(0.5f);
-        for (int i=0;i<TEST_NWALLS;i++)
-        {
-            float angle1 = (static_cast<float>(i)/TEST_NCORNER+current_time.count()*0.05f)*glm::pi<float>()*2.f;
-            float angle2 = (static_cast<float>(i+1)/TEST_NCORNER+current_time.count()*0.05f)*glm::pi<float>()*2.f;
-            glm::vec2 displac1(cos(angle1), sin(angle1));
-            glm::vec2 displac2(cos(angle2), sin(angle2));
-            arrWalls[i]->setPositions(center+displac1*0.02f, center+displac2*0.02f);
-        }
-        updateLiInfo();
         
         glClear(GL_COLOR_BUFFER_BIT);
         m_program.screen << gl::sl::use
