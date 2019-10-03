@@ -13,6 +13,7 @@ add_executable(Light2DApp ${APPSRC})
 target_link_libraries(Light2DApp libglw LibLight2D ${SDL2_LIBRARY} ${SDL2_SDLMAIN_LIBRARY} nlohmann_json::nlohmann_json)
 target_include_directories(Light2DApp 
     PUBLIC ${SDL2_INCLUDE_DIR}
+    PUBLIC "${CMAKE_SOURCE_DIR}/regex_literals"
 )
 message("libglw include : ${LIBGLW_INCLUDE_DIR}")
 set_target_properties(Light2DApp PROPERTIES
