@@ -5,6 +5,9 @@
 #define MAX_NUM_TOTAL_LIGHTS 10
 #define MAX_NUM_TOTAL_WALLS 10
 
+namespace jsonexpr
+{template <typename T> class Value;}
+
 namespace li
 {
     namespace shader
@@ -70,6 +73,7 @@ namespace li
         vec3 getColor()                     { return m_color; }
         shader::Light getShaderLight();
     protected:
+        friend class jsonexpr::Value<Light>;
         vec2 m_position=vec2(0.f);
         vec3 m_color;
         float m_size=0.f, m_strength=1.f;

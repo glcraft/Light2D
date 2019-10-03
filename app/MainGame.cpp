@@ -181,23 +181,30 @@ void MainGame::load_json()
         ifstr >> jsFile;
     for (auto& jLight : jsFile["lights"])
     {
-        JSONToValue<glm::vec2> pos(0.f);
-        JSONToValue<glm::vec3> color(1.f);
-        JSONToValue<float> size(1.f);
-        JSONToValue<float> strength(1.f);
-        pos.set(jLight["position"]);
-        color.set(jLight["color"]);
-        size.set(jLight["size"]);
-        strength.set(jLight["strenght"]);
+        li::Light& light = m_managerLight.getLight(m_managerLight.addLight(li::Light()));
+        jsonexpr::Value<li::Light> jsexLight(light);
+        jsexLight.set(jLight);
+        jsexLight.update();
+    }
+    // for (auto& jLight : jsFile["lights"])
+    // {
+    //     JsonExpr<glm::vec2> pos(0.f);
+    //     JsonExpr<glm::vec3> color(1.f);
+    //     JsonExpr<float> size(1.f);
+    //     JsonExpr<float> strength(1.f);
+    //     pos.set(jLight["position"]);
+    //     color.set(jLight["color"]);
+    //     size.set(jLight["size"]);
+    //     strength.set(jLight["strenght"]);
 
-        m_managerLight.addLight(li::Light(pos, color, size, strength));
-    }
-    for (auto& jWall : jsFile["walls"])
-    {
-        JSONToValue<glm::vec2> pos1(0.f);
-        JSONToValue<glm::vec2> pos2(0.f);
-        pos1.set(jWall["position1"]);
-        pos2.set(jWall["position2"]);
-        m_managerLight.addWall(li::Wall(pos1, pos2));
-    }
+    //     m_managerLight.addLight(li::Light(pos, color, size, strength));
+    // }
+    // for (auto& jWall : jsFile["walls"])
+    // {
+    //     JsonExpr<glm::vec2> pos1(0.f);
+    //     JsonExpr<glm::vec2> pos2(0.f);
+    //     pos1.set(jWall["position1"]);
+    //     pos2.set(jWall["position2"]);
+    //     m_managerLight.addWall(li::Wall(pos1, pos2));
+    // }
 }
