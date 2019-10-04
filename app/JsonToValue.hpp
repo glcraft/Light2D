@@ -18,8 +18,8 @@ namespace jsonexpr
         {}
         virtual void update() 
         { m_expr.value(); }
-        void set(exprtk::expression<float> expr)
-        { m_expr = std::move(expr); }
+        // void set(exprtk::expression<float> expr)
+        // { m_expr = std::move(expr); }
         exprtk::expression<float>& get()
         { return m_expr; }
     private:
