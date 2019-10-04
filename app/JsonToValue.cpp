@@ -80,6 +80,61 @@ namespace jsonexpr
         // m_subvalue.push_back(std::move(ptrSize));
         // m_subvalue.push_back(std::move(ptrStrenght));
     }
+    
+    template <int len>
+    void Value<glm::vec<len, float, glm::highp>>::define_vec()
+    {
+
+    }
+    template <int len>
+    auto define_vec(const nlohmann::json& jsValue)
+    {
+        std::ostringstream exprStr;
+        if (jsValue.is_string())
+        {
+            std::string s = jsValue;
+            std::smatch sm;
+            std::ostringstream ostrReg;
+            // R"reg(^\s*\(\s*(\w+)\s*,\s*(\w+)\s*\)\s*=>\s*{(.*)}\s*$)reg"_rg
+            ostrReg << "^\\s*\\(\\s*(\\w+)\\s*";
+            for (int i=1;i<len;i++)
+                ostrReg << ",\\s*(\\w+)\\s*";
+            ostrReg << "\\)\\s*=>\\s*{(.*)}\\s*$";
+            if (std::regex_match(s, sm, std::regex(ostrReg.str())))
+            {
+                for (int i=0;i<len;i++)
+                    symbol.add_variable(sm[i+1],m_value[i]);
+                exprStr << sm[sm.size()];
+            }
+        }
+        else if (jsValue.is_number()) // générique
+        {
+            float x = jsValue.get<float>();
+            for (int i=0;i<len;i++)
+            {
+                auto name = "v"+std::to_string(i+1);
+                symbol.add_variable(name,m_value[i]);
+                exprStr << name<< ":=" << x<<";";
+            }
+        }
+        else if (jsValue.is_object()) // générique
+        {
+            constexpr const std::array<std::array<const char*, 4>, 3> tableVecName{{{"x", "y", "z", "w"}, {"r", "g", "b", "a"}, {"s", "t", "p", "q"}}};
+            for (const auto& arrName : tableVecName)
+            {
+                if (jsValue.find(arrName[0])!=jsValue.end())
+                {
+                    for (int i=0;i<len;i++)
+                    {
+                        symbol.add_variable(arrName[i],m_value[i]);
+                        exprStr << arrName[i] << ":=" << get_value(jsValue[arrName[i]]) << ";";
+                    }
+                    break;
+                }
+            }
+        }
+        return exprStr.str();
+    }
     template<>
     void Value<glm::vec2>::set(const nlohmann::json& jsValue)
     {
@@ -93,28 +148,38 @@ namespace jsonexpr
         exprtk::expression<float> &expr = refExpr->get();
         exprtk::symbol_table<float> symbol;
         std::ostringstream exprStr;
+#if 0
         if (jsValue.is_string())
         {
             std::string s = jsValue;
             std::smatch sm;
-            if (R"reg(^\s*\(\s*(\w+)\s*,\s*(\w+)\s*\)\s*=>\s*{(.*)}\s*$)reg"_rg.match(s, sm))
+            std::ostringstream ostrReg;
+            // R"reg(^\s*\(\s*(\w+)\s*,\s*(\w+)\s*\)\s*=>\s*{(.*)}\s*$)reg"_rg
+            ostrReg << "^\\s*\\(\\s*(\\w+)\\s*";
+            for (int i=1;i<m_value.length();i++)
+                ostrReg << ",\\s*(\\w+)\\s*";
+            ostrReg << "\\)\\s*=>\\s*{(.*)}\\s*$";
+            if (std::regex_match(s, sm, std::regex(ostrReg.str())))
             {
                 for (int i=0;i<m_value.length();i++)
                     symbol.add_variable(sm[i+1],m_value[i]);
                 exprStr << sm[sm.size()];
             }
         }
-        else if (jsValue.is_number())
+        else if (jsValue.is_number()) // générique
         {
-            symbol.add_variable("x",m_value.x);
-            symbol.add_variable("y",m_value.y);
             float x = jsValue.get<float>();
-            exprStr << "x:=" << jsValue.get<float>() << ";y:=" << x << ";";
+            for (int i=0;i<m_value.length();i++)
+            {
+                auto name = "v"+std::to_string(i+1);
+                symbol.add_variable(name,m_value[i]);
+                exprStr << name<< ":=" << x<<";";
+            }
         }
-        else if (jsValue.is_object())
+        else if (jsValue.is_object()) // générique
         {
-            std::array<std::array<const char*, 2>, 3> tableName{{{"x", "y"}, {"r", "g"}, {"s", "t"}}};
-            for (std::array<const char*, 2> arrName : tableName)
+            constexpr const std::array<std::array<const char*, 4>, 3> tableVecName{{{"x", "y", "z", "w"}, {"r", "g", "b", "a"}, {"s", "t", "p", "q"}}};
+            for (const auto& arrName : tableVecName)
             {
                 if (jsValue.find(arrName[0])!=jsValue.end())
                 {
@@ -126,10 +191,11 @@ namespace jsonexpr
                     break;
                 }
             }
-
         }
+#endif
+        
         expr.register_symbol_table(symbol);
-        bool test = ExprParser.compile(exprStr.str(), expr);
+        bool test = ExprParser.compile(define_vec<glm::vec2::length()>(jsValue), expr);
         m_subvalue.push_back(std::move(refExpr));
     }
     template<>

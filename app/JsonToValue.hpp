@@ -38,6 +38,8 @@ namespace jsonexpr
                 v->update();
         }
     protected:
+        template <int len>
+        void define_vec();
         ValueType& m_value;
         std::vector<std::unique_ptr<AbstractValue>> m_subvalue;
     };
