@@ -7,6 +7,7 @@ find_package(SDL2 REQUIRED)
 file(GLOB APPSRC
     "*.cpp"
     "*.h"
+    "*.hpp"
 )
 
 add_executable(Light2DApp ${APPSRC})
