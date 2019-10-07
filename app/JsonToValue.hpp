@@ -14,9 +14,9 @@ namespace jsonexpr
     {
     public:
         //Useless
-        virtual void set(const nlohmann::json& jsValue)
+        void set(const nlohmann::json& jsValue) override
         {}
-        virtual void update() 
+        void update() override
         { m_expr.value(); }
         // void set(exprtk::expression<float> expr)
         // { m_expr = std::move(expr); }
@@ -31,7 +31,7 @@ namespace jsonexpr
     public:
         Value(ValueType& v) : m_value(v)
         {}
-        virtual void set(const nlohmann::json& jsValue);
+        void set(const nlohmann::json& jsValue) override;
         virtual void update()
         {
             for(auto& v : m_subvalue)
