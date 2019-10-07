@@ -1,6 +1,7 @@
 #include "JsonToValue.hpp"
 #include <sstream>
 #include <array>
+#include <exprtk.hpp>
 #include <liblight.h>
 #include <regex_literals.h>
 inline std::string get_value(const nlohmann::json& jV)
@@ -13,6 +14,21 @@ namespace jsonexpr
     struct Transmission {
         ValueType& m_value;
         std::vector<std::unique_ptr<AbstractValue>>& m_subvalue;
+    };
+    class Expression : public AbstractValue
+    {
+    public:
+        //Useless
+        void set(const nlohmann::json& jsValue) override
+        {}
+        void update() override
+        { m_expr.value(); }
+        // void set(exprtk::expression<float> expr)
+        // { m_expr = std::move(expr); }
+        exprtk::expression<float>& get()
+        { return m_expr; }
+    private:
+        exprtk::expression<float> m_expr;
     };
     exprtk::parser<float> ExprParser;
     template<>
