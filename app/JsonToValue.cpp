@@ -43,6 +43,16 @@ namespace jsonexpr
         m_subvalue.push_back(std::unique_ptr<Value<float>>(new Value<float>(m_value.m_strength, jsValue["strenght"])));
     }
     
+    template<>
+    void Value<li::Wall>::set(const nlohmann::json& jsValue)
+    {
+        m_subvalue.clear();
+        if (jsValue.is_null())
+            return;
+        m_subvalue.push_back(std::unique_ptr<Value<glm::vec2>>(new Value<glm::vec2>(m_value.m_pos1, jsValue["position1"])));
+        m_subvalue.push_back(std::unique_ptr<Value<glm::vec2>>(new Value<glm::vec2>(m_value.m_pos2, jsValue["position2"])));
+    }
+    
     template <typename VecX>
     inline auto define_vec(Transmission<VecX> transVal, const nlohmann::json& jsValue)
     {

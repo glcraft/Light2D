@@ -90,6 +90,7 @@ namespace li
         shader::Wall getShaderWall();
         shader::WallTangent getShaderWallInfo();
     protected:
+        friend class jsonexpr::Value<Wall>;
         vec2 m_pos1, m_pos2;
         // float m_width;
     };

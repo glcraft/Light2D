@@ -4,7 +4,7 @@
 #include <chrono>
 #include <GL/glew.h>
 #include <glm/gtc/matrix_transform.hpp>
-#include "JsonToValue.hpp"
+
 
 #define NBBLOCK 50
 #define SIZE_TERRAIN 30
@@ -185,6 +185,13 @@ void MainGame::load_json()
         std::unique_ptr<jsonexpr::Value<li::Light>>jsexLight(new jsonexpr::Value<li::Light>(light, jLight));
         jsexLight->update();
         m_tJsexpr.push_back(std::move(jsexLight));
+    }
+    for (auto& jWall : jsFile["walls"])
+    {
+        li::Wall& wall = m_managerLight.getWall(m_managerLight.addWall(li::Wall()));
+        std::unique_ptr<jsonexpr::Value<li::Wall>>jsexWall(new jsonexpr::Value<li::Wall>(wall, jWall));
+        jsexWall->update();
+        m_tJsexpr.push_back(std::move(jsexWall));
     }
     // for (auto& jLight : jsFile["lights"])
     // {

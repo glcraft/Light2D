@@ -3,7 +3,7 @@
 #include <libglw/Shaders.h>
 #include "Input.h"
 #include <liblight.h>
-
+#include "JsonToValue.hpp"
 
 class MainGame
 {
@@ -27,6 +27,6 @@ private:
     gl::UniformBuffer<li::shader::Lights<10>> uni_lights;
     gl::UniformBuffer<li::shader::Walls<10, 10>> uni_walls;
 
-    li::Manager::ID m_IDwall[3];
     li::Manager m_managerLight;
+    std::vector<std::unique_ptr<jsonexpr::AbstractValue>> m_tJsexpr;
 };
