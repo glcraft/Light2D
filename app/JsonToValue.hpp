@@ -26,6 +26,23 @@ namespace jsonexpr
         exprtk::expression<float> m_expr;
     };
     template<typename ValueType>
+    class StaticValue : public AbstractValue
+    {
+    public:
+        using value_type = ValueType;
+        StaticValue(ValueType& v) : m_value(v)
+        {}
+        void set(const nlohmann::json& jsValue) override
+        {
+            m_constantValue = jsValue;
+        }
+        void update() override
+        { m_value = m_constantValue; }
+    protected:
+        ValueType& m_value;
+        ValueType m_constantValue;
+    };
+    template<typename ValueType>
     class Value : public AbstractValue
     {
     public:
