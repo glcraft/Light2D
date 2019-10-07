@@ -1,10 +1,7 @@
 {
     "lights":[
         {
-            "position":  {
-                "x":0.5, 
-                "y":0.1
-            },
+            "position":  "(x,y)=>{x:=0.5; y:=1.0}",
             "strenght": 1.0,
             "size" : 0.05,
             "color": {
