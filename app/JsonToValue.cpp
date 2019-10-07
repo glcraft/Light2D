@@ -37,22 +37,11 @@ namespace jsonexpr
         m_subvalue.clear();
         if (jsValue.is_null())
             return;
-        std::unique_ptr<Value<glm::vec2>> ptrPos(new Value<glm::vec2>(m_value.m_position));
-        std::unique_ptr<Value<glm::vec3>> ptrColor(new Value<glm::vec3>(m_value.m_color));
-        std::unique_ptr<Value<float>> ptrSize(new Value<float>(m_value.m_size));
-        std::unique_ptr<Value<float>> ptrStrenght(new Value<float>(m_value.m_strength));
-
-        ptrPos->set(jsValue["position"]);
-        ptrColor->set(jsValue["color"]);
-        ptrSize->set(jsValue["size"]);
-        ptrStrenght->set(jsValue["strenght"]);
-
-        m_subvalue.push_back(std::move(ptrPos));
-        m_subvalue.push_back(std::move(ptrColor));
-        m_subvalue.push_back(std::move(ptrSize));
-        m_subvalue.push_back(std::move(ptrStrenght));
+        m_subvalue.push_back(std::unique_ptr<Value<glm::vec2>>(new Value<glm::vec2>(m_value.m_position, jsValue["position"])));
+        m_subvalue.push_back(std::unique_ptr<Value<glm::vec3>>(new Value<glm::vec3>(m_value.m_color, jsValue["color"])));
+        m_subvalue.push_back(std::unique_ptr<Value<float>>(new Value<float>(m_value.m_size, jsValue["size"])));
+        m_subvalue.push_back(std::unique_ptr<Value<float>>(new Value<float>(m_value.m_strength, jsValue["strenght"])));
     }
-    
     
     template <typename VecX>
     inline auto define_vec(Transmission<VecX> transVal, const nlohmann::json& jsValue)
@@ -88,11 +77,7 @@ namespace jsonexpr
         {
             float x = jsValue.get<float>();
             for (int i=0;i<len;i++)
-            {
-                auto name = "v"+std::to_string(i+1);
-                symbol.add_variable(name,value[i]);
-                exprStr << name<< ":=" << x<<";";
-            }
+                transVal.m_subvalue.push_back(std::unique_ptr<Value<float>>(new Value<float>(transVal.m_value[i], jsValue)));
         }
         else if (jsValue.is_object())
         {
@@ -115,9 +100,8 @@ namespace jsonexpr
         if (!sexpr.empty())
         {
             std::unique_ptr<Expression> refExpr(new Expression);
-            exprtk::expression<float> expr=refExpr->get();
-            expr.register_symbol_table(symbol);
-            bool ok = ExprParser.compile(exprStr.str(), expr);
+            refExpr->get().register_symbol_table(symbol);
+            bool ok = ExprParser.compile(sexpr, refExpr->get());
             transVal.m_subvalue.push_back(std::move(refExpr));
             return;
         }

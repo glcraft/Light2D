@@ -182,9 +182,9 @@ void MainGame::load_json()
     for (auto& jLight : jsFile["lights"])
     {
         li::Light& light = m_managerLight.getLight(m_managerLight.addLight(li::Light()));
-        jsonexpr::Value<li::Light> jsexLight(light);
-        jsexLight.set(jLight);
-        jsexLight.update();
+        std::unique_ptr<jsonexpr::Value<li::Light>>jsexLight(new jsonexpr::Value<li::Light>(light, jLight));
+        jsexLight->update();
+        m_tJsexpr.push_back(std::move(jsexLight));
     }
     // for (auto& jLight : jsFile["lights"])
     // {

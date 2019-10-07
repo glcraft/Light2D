@@ -17,6 +17,10 @@ namespace jsonexpr
         using value_type = ValueType;
         StaticValue(ValueType& v) : m_value(v)
         {}
+        StaticValue(ValueType& v, const nlohmann::json& jsValue) : m_value(v)
+        {
+            set(jsValue);
+        }
         void set(const nlohmann::json& jsValue) override
         {
             m_constantValue = jsValue;
@@ -34,6 +38,10 @@ namespace jsonexpr
         using value_type = ValueType;
         Value(ValueType& v) : m_value(v)
         {}
+        Value(ValueType& v, const nlohmann::json& jsValue) : m_value(v)
+        {
+            set(jsValue);
+        }
         void set(const nlohmann::json& jsValue) override;
         virtual void update()
         {
