@@ -46,6 +46,7 @@ namespace jsonexpr
     class Value : public AbstractValue
     {
     public:
+        using value_type = ValueType;
         Value(ValueType& v) : m_value(v)
         {}
         void set(const nlohmann::json& jsValue) override;
