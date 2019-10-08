@@ -32,17 +32,31 @@ namespace jsonexpr
         }
         //Useless
         void set(const nlohmann::json& jsValue) override
-        {}
+        {
+            bool ok = ExprParser.compile(jsValue, m_expr);
+        }
         void update() override
-        { m_expr.value(); }
-        // void set(exprtk::expression<float> expr)
-        // { m_expr = std::move(expr); }
+        { getValue(); }
         exprtk::expression<float>& get()
         { return m_expr; }
-    private:
+    protected:
+        float getValue() { return m_expr.value(); }
         exprtk::expression<float> m_expr;
     };
-    exprtk::parser<float> ExprParser;
+    template <typename ValueType>
+    class ExpressionValued : public Expression
+    {
+    public:
+        ExpressionValued(ValueType& v) : m_value(v), Expression()
+        {}
+        ExpressionValued(ValueType& v, const nlohmann::json& strExpr) : m_value(v), Expression()
+        { set(strExpr); }
+        void update() override
+        { m_value = getValue(); }
+    protected:
+        ValueType& m_value;
+    };
+    
     template<>
     void Value<li::Light>::set(const nlohmann::json& jsValue)
     {
@@ -153,26 +167,21 @@ namespace jsonexpr
         {
             std::string s = jsValue;
             std::smatch sm;
-            std::regex reg=std::regex(R"(^\s*\(\s*(\w+)\s*\)\s*=>\s*\{(.*)\}$)", std::regex_constants::ECMAScript);
-            if (std::regex_match(s, sm, reg))
+            if (R"(^\s*\(\s*(\w+)\s*\)\s*=>\s*\{(.*)\}$)"_rg.match(s, sm))
             {
                 symbol.add_variable(sm[1],m_value);
-                exprStr = sm[sm.size()-1];
+                auto& exprStr = sm[sm.size()-1];
+                std::unique_ptr<Expression> refExpr(new Expression);
+                refExpr->get().register_symbol_table(symbol);
+                ExprParser.compile(exprStr, refExpr->get());
+                m_subvalue.push_back(std::move(refExpr));
             }
+            else
+                m_subvalue.push_back(std::make_unique<ExpressionValued<value_type>>(m_value, jsValue));
+            
         }
         else if (jsValue.is_number())
-        {
-            std::unique_ptr<StaticValue<float>> refVal(new StaticValue<float>(m_value));
-            refVal->set(jsValue);
-            m_subvalue.push_back(std::move(refVal));
-        }
-        if (!exprStr.empty())
-        {
-            std::unique_ptr<Expression> refExpr(new Expression);
-            refExpr->get().register_symbol_table(symbol);
-            ExprParser.compile(exprStr, refExpr->get());
-            m_subvalue.push_back(std::move(refExpr));
-        }
+            m_subvalue.push_back(std::make_unique<StaticValue<value_type>>(m_value, jsValue));
         
     }
 }
