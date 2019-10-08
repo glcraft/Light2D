@@ -128,11 +128,7 @@ namespace jsonexpr
                 if (jsValue.find(arrName[0])!=jsValue.end())
                 {
                     for (int i=0;i<len;i++)
-                    {
-                        std::unique_ptr<Value<float>> v(new Value<float>(transVal.m_value[i]));
-                        v->set(jsValue[arrName[i]]);
-                        transVal.m_subvalue.push_back(std::move(v));
-                    }
+                        transVal.m_subvalue.push_back(std::make_unique<Value<float>>(transVal.m_value[i], jsValue[arrName[i]]));
                     break;
                 }
             }
