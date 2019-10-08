@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 namespace jsonexpr
 {
+    void add_global_variable(std::string name, float& value);
     class AbstractValue
     {
     public:

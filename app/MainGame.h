@@ -29,4 +29,5 @@ private:
 
     li::Manager m_managerLight;
     std::vector<std::unique_ptr<jsonexpr::AbstractValue>> m_tJsexpr;
+    float m_time;
 };

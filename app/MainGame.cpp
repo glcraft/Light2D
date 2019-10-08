@@ -132,6 +132,7 @@ void MainGame::display()
     while(!quit)
     {
         std::chrono::duration<float, std::ratio<1,1>> current_time(std::chrono::steady_clock::now()-time0);
+        m_time = current_time.count();
         Input::update();
         if (m_input.getKeyPressed(SDL_SCANCODE_ESCAPE)||m_input.getWindowData().closed)
             quit=true;
@@ -179,6 +180,7 @@ void MainGame::load_json()
     std::ifstream ifstr("light.json");
     if (ifstr)
         ifstr >> jsFile;
+    jsonexpr::add_global_variable("time", m_time);
     for (auto& jLight : jsFile["lights"])
     {
         li::Light& light = m_managerLight.getLight(m_managerLight.addLight(li::Light()));

@@ -10,6 +10,14 @@ inline std::string get_value(const nlohmann::json& jV)
 }
 namespace jsonexpr
 {
+    exprtk::parser<float> ExprParser;
+    exprtk::symbol_table<float> ExprGlobalSymbol;
+
+    void add_global_variable(std::string name, float& value)
+    {
+        ExprGlobalSymbol.add_variable(name, value);
+    }
+
     template <typename ValueType>
     struct Transmission {
         ValueType& m_value;
@@ -18,6 +26,10 @@ namespace jsonexpr
     class Expression : public AbstractValue
     {
     public:
+        Expression()
+        {
+            m_expr.register_symbol_table(ExprGlobalSymbol);
+        }
         //Useless
         void set(const nlohmann::json& jsValue) override
         {}
