@@ -115,6 +115,11 @@ namespace jsonexpr
             for (int i=0;i<len;i++)
                 transVal.m_subvalue.push_back(std::unique_ptr<Value<float>>(new Value<float>(transVal.m_value[i], jsValue)));
         }
+        else if (jsValue.is_array())
+        {
+            for (int i=0;i<len;i++)
+                transVal.m_subvalue.push_back(std::unique_ptr<Value<float>>(new Value<float>(transVal.m_value[i], jsValue[i])));
+        }
         else if (jsValue.is_object())
         {
             constexpr const std::array<std::array<const char*, 4>, 3> tableVecName{{{"x", "y", "z", "w"}, {"r", "g", "b", "a"}, {"s", "t", "p", "q"}}};
