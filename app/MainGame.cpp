@@ -133,6 +133,7 @@ void MainGame::display()
     {
         std::chrono::duration<float, std::ratio<1,1>> current_time(std::chrono::steady_clock::now()-time0);
         m_time = current_time.count();
+        updateLiInfo();
         Input::update();
         if (m_input.getKeyPressed(SDL_SCANCODE_ESCAPE)||m_input.getWindowData().closed)
             quit=true;
@@ -161,6 +162,9 @@ void MainGame::glxinfo()
 }
 void MainGame::updateLiInfo()
 {
+    for (auto& jsValue : m_tJsexpr)
+        jsValue->update();
+    
     if (m_managerLight.updateData())
     {
         auto lights = uni_lights.map_write();
