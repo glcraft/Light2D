@@ -63,10 +63,14 @@ namespace jsonexpr
         m_subvalue.clear();
         if (jsValue.is_null())
             return;
-        m_subvalue.push_back(std::unique_ptr<Value<glm::vec2>>(new Value<glm::vec2>(m_value.m_position, jsValue["position"])));
-        m_subvalue.push_back(std::unique_ptr<Value<glm::vec3>>(new Value<glm::vec3>(m_value.m_color, jsValue["color"])));
-        m_subvalue.push_back(std::unique_ptr<Value<float>>(new Value<float>(m_value.m_size, jsValue["size"])));
-        m_subvalue.push_back(std::unique_ptr<Value<float>>(new Value<float>(m_value.m_strength, jsValue["strenght"])));
+        if (jsValue.find("position")!=jsValue.end())
+            m_subvalue.push_back(std::unique_ptr<Value<glm::vec2>>(new Value<glm::vec2>(m_value.m_position, jsValue["position"])));
+        if (jsValue.find("color")!=jsValue.end())
+            m_subvalue.push_back(std::unique_ptr<Value<glm::vec3>>(new Value<glm::vec3>(m_value.m_color, jsValue["color"])));
+        if (jsValue.find("size")!=jsValue.end())
+            m_subvalue.push_back(std::unique_ptr<Value<float>>(new Value<float>(m_value.m_size, jsValue["size"])));
+        if (jsValue.find("strenght")!=jsValue.end())
+            m_subvalue.push_back(std::unique_ptr<Value<float>>(new Value<float>(m_value.m_strength, jsValue["strenght"])));
     }
     
     template<>
@@ -75,8 +79,10 @@ namespace jsonexpr
         m_subvalue.clear();
         if (jsValue.is_null())
             return;
-        m_subvalue.push_back(std::unique_ptr<Value<glm::vec2>>(new Value<glm::vec2>(m_value.m_pos1, jsValue["position1"])));
-        m_subvalue.push_back(std::unique_ptr<Value<glm::vec2>>(new Value<glm::vec2>(m_value.m_pos2, jsValue["position2"])));
+        if (jsValue.find("position1")!=jsValue.end())
+            m_subvalue.push_back(std::unique_ptr<Value<glm::vec2>>(new Value<glm::vec2>(m_value.m_pos1, jsValue["position1"])));
+        if (jsValue.find("position2")!=jsValue.end())
+            m_subvalue.push_back(std::unique_ptr<Value<glm::vec2>>(new Value<glm::vec2>(m_value.m_pos2, jsValue["position2"])));
     }
     
     template <typename VecX>
