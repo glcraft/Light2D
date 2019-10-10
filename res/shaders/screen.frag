@@ -44,7 +44,7 @@ vec2 get_normal(vec2 dir)
 {
     return vec2(dir.y, -dir.x);
 }
-float cross(vec2 v, vec2 w)
+float det(vec2 v, vec2 w)
 {
     return v.x*w.y-v.y*w.x;
 }
