@@ -20,8 +20,9 @@ void MainGame::init()
     std::random_device rd;  //Will be used to obtain a seed for the random number engine
     std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
     std::uniform_int_distribution<> dis(1, SIZE_TERRAIN-1);
-
-    m_input.createWindow("Light2D", SDL_WINDOW_OPENGL, glm::ivec2(SDL_WINDOWPOS_CENTERED),  glm::ivec2(1024));
+    SDL_DisplayMode dsmode;
+    SDL_GetDisplayMode(0,0,&dsmode);
+    m_input.createWindow("Light2D", SDL_WINDOW_OPENGL, glm::ivec2(SDL_WINDOWPOS_CENTERED),  glm::ivec2(dsmode.h*3/4));
     SDL_GL_SetSwapInterval(1);
     glewExperimental = true;
     glewInit();
