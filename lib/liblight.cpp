@@ -25,20 +25,25 @@ namespace li
     }
     shader::WallTangent setWallInfo(shader::Wall& wall, glm::vec2 posLight, float size)
     {
+        using namespace shader;
+        using std::swap;
         shader::WallTangent wi;
         glm::vec2 left = wall.pointLeft, right=wall.pointRight;
+        wi.sens.x=(dot(wall.direction.normal, wall.pointLeft - posLight)>0);
+        if (wi.sens.x)
+            swap(left, right);
         if (size>0)
         {
             glm::vec4 tan1 = finding_tangent(posLight, size, left), tan2 = finding_tangent(posLight, size, right);
-            wi.innerLeft = normalize(getXY(tan1));
-            wi.innerRight = normalize(getZW(tan2));
-            wi.outerLeft = normalize(getZW(tan1));
-            wi.outerRight = normalize(getXY(tan2));
+            wi.inner[0] = normalize(getXY(tan1));
+            wi.inner[1] = normalize(getZW(tan2));
+            wi.outer[0] = normalize(getZW(tan1));
+            wi.outer[1] = normalize(getXY(tan2));
         }
         else
         {
-            wi.innerLeft = wi.outerLeft = normalize(posLight-left);
-            wi.innerRight = wi.outerRight = normalize(posLight-right);
+            wi.inner[0] = wi.outer[0] = normalize(posLight-left);
+            wi.inner[1] = wi.outer[1] = normalize(posLight-right);
         }
         return wi;
     }

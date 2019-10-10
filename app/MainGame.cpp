@@ -5,8 +5,11 @@
 #include <GL/glew.h>
 #include <glm/gtc/matrix_transform.hpp>
 
+
 #define NBBLOCK 50
 #define SIZE_TERRAIN 30
+#define TEST_NWALLS 1
+#define TEST_NCORNER 4
 
 
 
@@ -80,19 +83,10 @@ void MainGame::init()
     uni_lights.setName("Lights");
     uni_walls.reserve(1);
     uni_walls.setName("Walls");
-
+    
     {
         using namespace glm;
-        
-        const float size=0.02f, strength=.5f;
-
-        m_managerLight.addLight(li::Light(vec2(0.3f, 0.3f), vec3(1,0,0), size, strength));
-        m_managerLight.addLight(li::Light(vec2(0.5f, 0.7f), vec3(0,1,0), size, strength));
-        m_managerLight.addLight(li::Light(vec2(0.7f, 0.3f), vec3(0,0,1), size, strength));
-
-        // m_managerLight.addWall(li::Wall(vec2(0.3, 0.7), vec2(0.7,0.7)));
-        m_IDwall1 = m_managerLight.addWall(li::Wall(vec2(0.45, 0.5), vec2(0.55,0.5)));
-        m_IDwall2 = m_managerLight.addWall(li::Wall(vec2(0.55, 0.5), vec2(0.45,0.5)));
+        load_json();
 
         m_managerLight.updateData();
 
@@ -134,19 +128,15 @@ void MainGame::display()
     auto time0 = std::chrono::steady_clock::now();
 
     glViewport(0,0,m_input.getWindowData().size.x, m_input.getWindowData().size.y);
-    auto& wall1 = m_managerLight.getWall(m_IDwall1);
-    auto& wall2 = m_managerLight.getWall(m_IDwall2);
+    
     while(!quit)
     {
         std::chrono::duration<float, std::ratio<1,1>> current_time(std::chrono::steady_clock::now()-time0);
+        m_time = current_time.count();
+        updateLiInfo();
         Input::update();
         if (m_input.getKeyPressed(SDL_SCANCODE_ESCAPE)||m_input.getWindowData().closed)
             quit=true;
-        glm::vec2 displ(glm::cos(current_time.count()*0.5)*0.05f, glm::sin(current_time.count()*0.5)*0.05f);
-        wall1.setPositions(glm::vec2(0.5f)+displ, glm::vec2(0.5f)-displ);
-        wall2.setPositions(glm::vec2(0.5f)-displ, glm::vec2(0.5f)+displ);
-        
-        updateLiInfo();
         
         glClear(GL_COLOR_BUFFER_BIT);
         m_program.screen << gl::sl::use
@@ -172,6 +162,9 @@ void MainGame::glxinfo()
 }
 void MainGame::updateLiInfo()
 {
+    for (auto& jsValue : m_tJsexpr)
+        jsValue->update();
+    
     if (m_managerLight.updateData())
     {
         auto lights = uni_lights.map_write();
@@ -180,5 +173,30 @@ void MainGame::updateLiInfo()
         memcpy(walls, &m_managerLight.getWallsShader(), sizeof(m_managerLight.getWallsShader()));
         uni_walls.unmap();
         uni_lights.unmap();
+    }
+}
+
+
+void MainGame::load_json()
+{
+    namespace nl = nlohmann;
+    nl::json jsFile;
+    std::ifstream ifstr("res/maps/main.json");
+    if (ifstr)
+        ifstr >> jsFile;
+    jsonexpr::add_global_variable("time", m_time);
+    for (auto& jLight : jsFile["lights"])
+    {
+        li::Light& light = m_managerLight.getLight(m_managerLight.addLight(li::Light()));
+        std::unique_ptr<jsonexpr::Value<li::Light>>jsexLight(new jsonexpr::Value<li::Light>(light, jLight));
+        jsexLight->update();
+        m_tJsexpr.push_back(std::move(jsexLight));
+    }
+    for (auto& jWall : jsFile["walls"])
+    {
+        li::Wall& wall = m_managerLight.getWall(m_managerLight.addWall(li::Wall()));
+        std::unique_ptr<jsonexpr::Value<li::Wall>>jsexWall(new jsonexpr::Value<li::Wall>(wall, jWall));
+        jsexWall->update();
+        m_tJsexpr.push_back(std::move(jsexWall));
     }
 }

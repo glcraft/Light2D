@@ -1,3 +1,9 @@
 [submodule "libglw"]
 	path = libglw
 	url = https://github.com/glcraft/libglw.git
+[submodule "nlohmann_json"]
+	path = nlohmann_json
+	url = https://github.com/nlohmann/json.git
+[submodule "regex_literals"]
+	path = regex_literals
+	url = https://github.com/glcraft/regex_literals.git
