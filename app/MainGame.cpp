@@ -181,7 +181,7 @@ void MainGame::load_json()
 {
     namespace nl = nlohmann;
     nl::json jsFile;
-    std::ifstream ifstr("light.json");
+    std::ifstream ifstr("res/maps/main.json");
     if (ifstr)
         ifstr >> jsFile;
     jsonexpr::add_global_variable("time", m_time);
