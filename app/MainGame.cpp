@@ -199,25 +199,4 @@ void MainGame::load_json()
         jsexWall->update();
         m_tJsexpr.push_back(std::move(jsexWall));
     }
-    // for (auto& jLight : jsFile["lights"])
-    // {
-    //     JsonExpr<glm::vec2> pos(0.f);
-    //     JsonExpr<glm::vec3> color(1.f);
-    //     JsonExpr<float> size(1.f);
-    //     JsonExpr<float> strength(1.f);
-    //     pos.set(jLight["position"]);
-    //     color.set(jLight["color"]);
-    //     size.set(jLight["size"]);
-    //     strength.set(jLight["strenght"]);
-
-    //     m_managerLight.addLight(li::Light(pos, color, size, strength));
-    // }
-    // for (auto& jWall : jsFile["walls"])
-    // {
-    //     JsonExpr<glm::vec2> pos1(0.f);
-    //     JsonExpr<glm::vec2> pos2(0.f);
-    //     pos1.set(jWall["position1"]);
-    //     pos2.set(jWall["position2"]);
-    //     m_managerLight.addWall(li::Wall(pos1, pos2));
-    // }
 }
