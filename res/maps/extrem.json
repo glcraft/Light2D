@@ -1,0 +1,19 @@
+{
+    "lights":[
+        {
+            "position": [0.5, 0.0],
+            "strenght": 10.0,
+            "size" : 0.5,
+            "color": [1,1,1]
+        }
+    ],
+    "walls":[
+        {
+            "position1":  [0.495, 0.51],
+            "position2":  [0.505, 0.51]
+        }
+    ],
+    "comments_walls":[
+        
+    ]
+}
