@@ -81,6 +81,8 @@ void main()
             float newValWhite=1.0;
             int idWall = iLight*nbWalls+iWall;
             vec2 wall_normal, wall_pointLeft, wall_pointRight;
+            vec2 wall_outerLeft=walltangs[idWall].outerLeft, wall_outerRight=walltangs[idWall].outerRight;
+            vec2 wall_innerLeft=walltangs[idWall].innerLeft, wall_innerRight=walltangs[idWall].innerRight;
             if(walltangs[idWall].sens.x==1)
             {
                 wall_normal = -walls[iWall].direction.normal;
@@ -93,6 +95,20 @@ void main()
                 wall_pointLeft = walls[iWall].pointLeft;
                 wall_pointRight = walls[iWall].pointRight;
             }
+            if (dot(wall_innerLeft, wall_normal)<=0)
+            {
+                wall_innerLeft = normalize(wall_pointLeft - wall_pointRight);
+                // vec2 temp = wall_innerLeft;
+                // wall_innerLeft = wall_outerLeft;
+                // wall_outerLeft = temp;
+            }
+            if (dot(wall_innerRight, wall_normal)<=0)
+            {
+                wall_innerRight = normalize(wall_pointRight - wall_pointLeft);
+                // vec2 temp = wall_innerRight;
+                // wall_innerRight = wall_outerRight;
+                // wall_outerRight = temp;
+            }
 #if DEBUG
             if (distLightUV<=lights[iLight].size_strength.x)//
                 valwhite=0.0;
@@ -101,43 +117,37 @@ void main()
             // Le fragment dépasse la limite de la source lumineuse
             if (distLightUV>size_and_strength)
                 newValWhite=0.0;
-            // else if (dot(walltangs[idWall].outerLeft, wall_normal)<0 || dot(walltangs[idWall].outerRight, wall_normal)<0) continue;
+            // else if (dot(wall_outerLeft, wall_normal)<=0 || dot(wall_outerRight, wall_normal)<=0) continue;
             // La fragment est entre la lumière et le mur
             else if (dot((uv-wall_pointLeft), wall_normal)>0);
             // Le fragment est derrière le mur par rapport à la lumière
-            else if (dot(get_normal(walltangs[idWall].innerLeft), wall_pointLeft - uv)>0 && dot(get_normal(walltangs[idWall].innerRight), wall_pointRight - uv)<0)
-            {
+            else if (dot(get_normal(wall_innerLeft), wall_pointLeft - uv)>0 && dot(get_normal(wall_innerRight), wall_pointRight - uv)<=0)
                 newValWhite=0.;
-            }
             // Si la taille de la lumière n'est pas nulle.
             else if (lights[iLight].size_strength.x>0.)
             {
                 
                 // Le fragment se situe après le croisement des inner (dans le cas ou la source lumineuse est plus grosse que le mur)
-                if (dot(get_normal(walltangs[idWall].innerLeft), wall_pointLeft - uv)<0 && dot(get_normal(walltangs[idWall].innerRight), wall_pointRight - uv)>0)
+                if (dot(get_normal(wall_innerLeft), wall_pointLeft - uv)<=0 && dot(get_normal(wall_innerRight), wall_pointRight - uv)>0)
                 {
-                    // InnerLeft et InnerRight se croisent, s'en occuper plus tard
+                    // InnerLeft et InnerRight se croisent
                     // vector finding cross point : https://stackoverflow.com/a/565282/6345054
-                    float v1=smooth_vectors(walltangs[idWall].innerLeft, walltangs[idWall].outerLeft, normalize(wall_pointLeft - uv));
-                    float v2=smooth_vectors(walltangs[idWall].innerRight, walltangs[idWall].outerRight, normalize(wall_pointRight - uv));
-                    vec2 p = wall_pointLeft, r=walltangs[idWall].innerLeft, q=wall_pointRight, s=walltangs[idWall].innerRight;
+                    float v1=smooth_vectors(wall_innerLeft, wall_outerLeft, normalize(wall_pointLeft - uv));
+                    float v2=smooth_vectors(wall_innerRight, wall_outerRight, normalize(wall_pointRight - uv));
+                    vec2 p = wall_pointLeft, r=wall_innerLeft, q=wall_pointRight, s=wall_innerRight;
                     float t=det((q-p), s/(det(r, s)));
-                    vec2 pt = wall_pointLeft+t*walltangs[idWall].innerLeft;
-                    float valPT = mix(v2, v1, smooth_vectors(walltangs[idWall].innerLeft, walltangs[idWall].innerRight, normalize(pt - uv)));
+                    vec2 pt = wall_pointLeft+t*wall_innerLeft;
+                    float valPT = mix(v2, v1, smooth_vectors(wall_innerLeft, wall_innerRight, normalize(pt - uv)));
                     newValWhite=valPT;
                 }
-                else 
+                else  
                 {
                     // Le fragment est dans la transition gauche
-                    if (dot(get_normal(walltangs[idWall].innerLeft), wall_pointLeft - uv)<0 && dot(get_normal(walltangs[idWall].outerLeft), wall_pointLeft - uv)>0)
-                    {
-                        newValWhite=smooth_vectors(walltangs[idWall].innerLeft, walltangs[idWall].outerLeft, normalize(wall_pointLeft - uv));
-                    }
+                    if (dot(get_normal(wall_innerLeft), wall_pointLeft - uv)<=0 && dot(get_normal(wall_outerLeft), wall_pointLeft - uv)>0)
+                        newValWhite=smooth_vectors(wall_innerLeft, wall_outerLeft, normalize(wall_pointLeft - uv));
                     // Le fragment est dans la transition droite
-                    if (dot(get_normal(walltangs[idWall].innerRight), wall_pointRight - uv)>0 && dot(get_normal(walltangs[idWall].outerRight), wall_pointRight - uv)<0)
-                    {
-                        newValWhite=smooth_vectors(walltangs[idWall].innerRight, walltangs[idWall].outerRight, normalize(wall_pointRight - uv));
-                    }
+                    if (dot(get_normal(wall_innerRight), wall_pointRight - uv)>0 && dot(get_normal(wall_outerRight), wall_pointRight - uv)<=0)
+                        newValWhite=smooth_vectors(wall_innerRight, wall_outerRight, normalize(wall_pointRight - uv));
                 }
                 
             }
