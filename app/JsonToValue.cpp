@@ -1,7 +1,7 @@
 #include "JsonToValue.hpp"
 #include <sstream>
 #include <array>
-#include <exprtk.hpp>
+#include "exprtk.hpp"
 #include <liblight.h>
 #include <regex_literals.h>
 inline std::string get_value(const nlohmann::json& jV)

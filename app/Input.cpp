@@ -1,6 +1,7 @@
 #include "Input.h"
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 #include <GL/glew.h>
 std::map<Uint32, Input::WindowData> Input::m_windows;
 
@@ -27,8 +28,8 @@ void Input::createWindow(const std::string& title, Uint32 flags, glm::vec2 pos, 
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 8);
+	// SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+	// SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 8);
 	SDL_DisplayMode DM;
 	SDL_GetCurrentDisplayMode(0, &DM);
 	if (size.x < 0)
