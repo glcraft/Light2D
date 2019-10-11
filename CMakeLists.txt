@@ -4,6 +4,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 project(Light2D)
 
+add_subdirectory(glm)
+set (GLM_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/glm")
 add_subdirectory(libglw)
 add_subdirectory(nlohmann_json)
 
