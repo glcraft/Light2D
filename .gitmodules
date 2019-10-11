@@ -7,3 +7,6 @@
 [submodule "regex_literals"]
 	path = regex_literals
 	url = https://github.com/glcraft/regex_literals.git
+[submodule "glm"]
+	path = glm
+	url = https://github.com/g-truc/glm.git
