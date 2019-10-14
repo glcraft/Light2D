@@ -17,3 +17,5 @@ add_dependencies(Light2DApp LibLight2D)
 target_include_directories(Light2DApp 
     PUBLIC "lib"
 )
+
+set(GLM_TEST_ENABLE OFF)
